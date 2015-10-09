@@ -1,65 +1,54 @@
-﻿using System;
+﻿using OpenTK;
+using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Messier.Voxel
 {
-    public class VoxelChunk : IDisposable
+    public class VoxelSuperChunk : IDisposable
     {
-        public const int Side = 512;   //Decide on exactly how large this is, what does it represent?
+        Dictionary<Vector3, VoxelChunk> chunks;
 
-        public long ID { get; set; }
+        public bool Visible { get; set; } = false;
+        public long ID { get; }
 
-        ushort[,,] voxels;
-
-        public VoxelChunk(long ID)
+        public VoxelSuperChunk(long ID)
         {
-            this.ID = ID;
+            chunks = new Dictionary<Vector3, VoxelChunk>();
         }
 
-        public ushort this[int x, int y, int z]
+        public void SetupData()
         {
-            get
+            for (int i = 0; i < chunks.Values.Count; i++)
             {
-                if (voxels == null) Load();
-                return voxels[x, y, z];
+                chunks.Values.ElementAt(i).SetupData();
             }
-            set
+        }
+
+        public void Load()
+        {
+            for (int i = 0; i < chunks.Values.Count; i++)
             {
-                voxels[x, y, z] = value;
+                chunks.Values.ElementAt(i).Load();
             }
         }
 
         public void Save()
         {
-            if (!Directory.Exists("VoxelData")) Directory.CreateDirectory("VoxelData");
-            File.WriteAllBytes("VoxelData/" + ID.ToString() + ".vdat", voxels.Cast<byte>().ToArray());
-        }
-
-        public void Load()
-        {
-            byte[] tmp = File.ReadAllBytes("VoxelData/" + ID.ToString() + ".vdat");
-            voxels = new ushort[Side, Side, Side];
-            Buffer.BlockCopy(tmp, 0, voxels, 0, tmp.Length);
-        }
-
-        public void SetupData()
-        {
-            voxels = new ushort[Side, Side, Side];
-        }
-
-        public void FreeData()
-        {
-            voxels = null;
+            for(int i = 0; i < chunks.Values.Count; i++)
+            {
+                chunks.Values.ElementAt(i).Save();
+            }
         }
 
         public void SaveAndFree()
         {
-            Save();
-            FreeData();
+            for (int i = 0; i < chunks.Values.Count; i++)
+            {
+                chunks.Values.ElementAt(i).SaveAndFree();
+            }
         }
 
         #region IDisposable Support
@@ -75,15 +64,12 @@ namespace Messier.Voxel
                     SaveAndFree();
                 }
 
-                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                // TODO: set large fields to null.
-
                 disposedValue = true;
             }
         }
 
         // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-        // ~VoxelChunk() {
+        // ~VoxelSuperChunk() {
         //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
         //   Dispose(false);
         // }
@@ -97,5 +83,6 @@ namespace Messier.Voxel
             // GC.SuppressFinalize(this);
         }
         #endregion
+
     }
 }
