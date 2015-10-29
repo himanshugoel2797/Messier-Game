@@ -26,7 +26,7 @@ namespace Messier.Graphics
 
         public void SetData(ITextureSource src)
         {
-            GPUStateMachine.BindTexture(src.GetTextureTarget(), id);
+            GPUStateMachine.BindTexture(0, src.GetTextureTarget(), id);
             switch (src.GetDimensions())
             {
                 case 1:
@@ -41,7 +41,7 @@ namespace Messier.Graphics
             }
 
             GL.GenerateMipmap((GenerateMipmapTarget)src.GetTextureTarget());
-            GPUStateMachine.UnbindTexture(src.GetTextureTarget());
+            GPUStateMachine.UnbindTexture(0, src.GetTextureTarget());
 
             this.Width = src.GetWidth();
             this.Height = src.GetHeight();

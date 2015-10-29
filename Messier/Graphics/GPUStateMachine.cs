@@ -12,7 +12,7 @@ namespace Messier.Graphics
     {
         static Dictionary<BufferTarget, Stack<int>> boundBuffers;
         static Stack<int> vertexArrays;
-        static Dictionary<TextureTarget, Stack<int>> boundTextures;
+        static List<Dictionary<TextureTarget, Stack<int>>> boundTextures;
 
         static GPUStateMachine()
         {
@@ -20,9 +20,13 @@ namespace Messier.Graphics
             boundBuffers[BufferTarget.ArrayBuffer] = new Stack<int>();
             boundBuffers[BufferTarget.ArrayBuffer].Push(0);
 
-            boundTextures = new Dictionary<TextureTarget, Stack<int>>();
-            boundTextures[TextureTarget.Texture2D] = new Stack<int>();
-            boundTextures[TextureTarget.Texture2D].Push(0);
+            boundTextures = new List<Dictionary<TextureTarget, Stack<int>>>();
+            for (int i = 0; i < 8; i++)
+            {
+                boundTextures[i] = new Dictionary<TextureTarget, Stack<int>>();
+                boundTextures[i][TextureTarget.Texture2D] = new Stack<int>();
+                boundTextures[i][TextureTarget.Texture2D].Push(0);
+            }
 
             vertexArrays = new Stack<int>();
             vertexArrays.Push(0);
@@ -33,7 +37,7 @@ namespace Messier.Graphics
         {
             if (boundBuffers[target].Count == 0) boundBuffers[target].Push(0);
 
-            if(boundBuffers[target].Peek() != id)GL.BindBuffer(target, id);
+            if (boundBuffers[target].Peek() != id) GL.BindBuffer(target, id);
             boundBuffers[target].Push(id);
         }
 
@@ -45,18 +49,19 @@ namespace Messier.Graphics
         #endregion
 
         #region Buffer object state
-        public static void BindTexture(TextureTarget target, int id)
+        public static void BindTexture(int index, TextureTarget target, int id)
         {
-            if (boundTextures[target].Count == 0) boundTextures[target].Push(0);
+            GL.ActiveTexture(TextureUnit.Texture0 + index);
+            if (boundTextures[index][target].Count == 0) boundTextures[index][target].Push(0);
 
-            if (boundTextures[target].Peek() != id) GL.BindTexture(target, id);
-            boundTextures[target].Push(id);
+            if (boundTextures[index][target].Peek() != id) GL.BindTexture(target, id);
+            boundTextures[index][target].Push(id);
         }
 
-        public static void UnbindTexture(TextureTarget target)
+        public static void UnbindTexture(int index, TextureTarget target)
         {
-            boundTextures[target].Pop();
-            BindTexture(target, boundTextures[target].Pop());
+            boundTextures[index][target].Pop();
+            BindTexture(index, target, boundTextures[index][target].Pop());
         }
         #endregion
 
