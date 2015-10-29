@@ -58,6 +58,7 @@
     <Compile Include="DataStructures\NTree.cs" />
     <Compile Include="DataStructures\Octree.cs" />
     <Compile Include="Graphics\BitmapTextureSource.cs" />
+    <Compile Include="Graphics\DepthTextureSource.cs" />
     <Compile Include="Graphics\GPUBuffer.cs" />
     <Compile Include="Graphics\GPUStateMachine.cs" />
     <Compile Include="Graphics\GraphicsDevice.cs" />
