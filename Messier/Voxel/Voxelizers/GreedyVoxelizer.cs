@@ -13,19 +13,7 @@ namespace Messier.Voxel.Voxelizers
         {
             List<float> verts = new List<float>();
 
-            for(int x = 0; x < VoxelChunk.Side; x++)
-            {
-                for(int y = 0; y < VoxelChunk.Side; y++)
-                {
-                    for(int z = 0; z < VoxelChunk.Side; z++)
-                    {
-                        
-
-                    }
-                }
-            }
-
-
+            return null;
         }
     }
 }

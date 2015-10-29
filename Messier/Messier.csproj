@@ -57,12 +57,14 @@
   <ItemGroup>
     <Compile Include="DataStructures\NTree.cs" />
     <Compile Include="DataStructures\Octree.cs" />
+    <Compile Include="Graphics\BitmapTextureSource.cs" />
     <Compile Include="Graphics\GPUBuffer.cs" />
     <Compile Include="Graphics\GPUStateMachine.cs" />
     <Compile Include="Graphics\GraphicsDevice.cs" />
     <Compile Include="Graphics\ShaderProgram.cs" />
     <Compile Include="Graphics\ShaderSource.cs" />
     <Compile Include="Graphics\Texture.cs" />
+    <Compile Include="Graphics\ITextureSource.cs" />
     <Compile Include="Graphics\VertexArray.cs" />
     <Compile Include="Math\Vector3.cs" />
     <Compile Include="Math\VectorN.cs" />

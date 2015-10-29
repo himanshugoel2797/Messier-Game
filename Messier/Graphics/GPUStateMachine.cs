@@ -12,12 +12,17 @@ namespace Messier.Graphics
     {
         static Dictionary<BufferTarget, Stack<int>> boundBuffers;
         static Stack<int> vertexArrays;
+        static Dictionary<TextureTarget, Stack<int>> boundTextures;
 
         static GPUStateMachine()
         {
             boundBuffers = new Dictionary<BufferTarget, Stack<int>>();
             boundBuffers[BufferTarget.ArrayBuffer] = new Stack<int>();
             boundBuffers[BufferTarget.ArrayBuffer].Push(0);
+
+            boundTextures = new Dictionary<TextureTarget, Stack<int>>();
+            boundTextures[TextureTarget.Texture2D] = new Stack<int>();
+            boundTextures[TextureTarget.Texture2D].Push(0);
 
             vertexArrays = new Stack<int>();
             vertexArrays.Push(0);
@@ -36,6 +41,22 @@ namespace Messier.Graphics
         {
             boundBuffers[target].Pop();
             BindBuffer(target, boundBuffers[target].Pop());
+        }
+        #endregion
+
+        #region Buffer object state
+        public static void BindTexture(TextureTarget target, int id)
+        {
+            if (boundTextures[target].Count == 0) boundTextures[target].Push(0);
+
+            if (boundTextures[target].Peek() != id) GL.BindTexture(target, id);
+            boundTextures[target].Push(id);
+        }
+
+        public static void UnbindTexture(TextureTarget target)
+        {
+            boundTextures[target].Pop();
+            BindTexture(target, boundTextures[target].Pop());
         }
         #endregion
 
