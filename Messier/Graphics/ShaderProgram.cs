@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using OpenTK.Graphics.OpenGL4;
+using OpenTK;
 
 namespace Messier.Graphics
 {
@@ -40,6 +41,43 @@ namespace Messier.Graphics
                 GL.DetachShader(id, shaders[i].id);
             }
         }
+
+        public void Set(string name, Vector3 vec)
+        {
+            int loc = GL.GetProgramResourceLocation(id, ProgramInterface.Uniform, name);
+            if (loc >= 0) GL.Uniform3(loc, vec);
+        }
+
+        public void Set(string name, Vector4 vec)
+        {
+            int loc = GL.GetProgramResourceLocation(id, ProgramInterface.Uniform, name);
+            if (loc >= 0) GL.Uniform4(loc, vec);
+        }
+
+        public void Set(string name, Vector2 vec)
+        {
+            int loc = GL.GetProgramResourceLocation(id, ProgramInterface.Uniform, name);
+            if (loc >= 0) GL.Uniform2(loc, vec);
+        }
+
+        public void Set(string name, Matrix4 vec)
+        {
+            int loc = GL.GetProgramResourceLocation(id, ProgramInterface.Uniform, name);
+            if (loc >= 0) GL.UniformMatrix4(loc, false, ref vec);  
+        }
+
+        public void Set(string name, float val)
+        {
+            int loc = GL.GetProgramResourceLocation(id, ProgramInterface.Uniform, name);
+            if (loc >= 0) GL.Uniform1(loc, val);
+        }
+
+        public void Set(string name, Texture t)
+        {
+            int loc = GL.GetProgramResourceLocation(id, ProgramInterface.Uniform, name);
+            if (loc >= 0) GL.Uniform1(loc, t.id);
+        }
+
 
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls

@@ -14,11 +14,10 @@ namespace Messier.Graphics
         internal TextureTarget texTarget;
         internal PixelFormat format;
 
-        public int Width { get; set; }
-        public int Height { get; set; }
-        public int Depth { get; set; }
-        public int LevelCount { get; set; }
-
+        public int Width { get; internal set; }
+        public int Height { get; internal set; }
+        public int Depth { get; internal set; }
+        public int LevelCount { get; internal set; }
 
         public Texture()
         {
