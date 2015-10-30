@@ -65,7 +65,7 @@ namespace Messier.Graphics
                     // TODO: dispose managed state (managed objects).
                 }
 
-                GL.DeleteTexture(id);
+                if(id != 0)GL.DeleteTexture(id);
                 id = 0;
 
                 disposedValue = true;

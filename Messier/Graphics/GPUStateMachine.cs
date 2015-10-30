@@ -11,7 +11,7 @@ namespace Messier.Graphics
     public static class GPUStateMachine
     {
         static Dictionary<BufferTarget, Stack<int>> boundBuffers;
-        static Stack<int> vertexArrays;
+        static Stack<int> vertexArrays, framebuffers;
         static List<Dictionary<TextureTarget, Stack<int>>> boundTextures;
 
         static GPUStateMachine()
@@ -23,13 +23,16 @@ namespace Messier.Graphics
             boundTextures = new List<Dictionary<TextureTarget, Stack<int>>>();
             for (int i = 0; i < 8; i++)
             {
-                boundTextures[i] = new Dictionary<TextureTarget, Stack<int>>();
+                boundTextures.Add(new Dictionary<TextureTarget, Stack<int>>());
                 boundTextures[i][TextureTarget.Texture2D] = new Stack<int>();
                 boundTextures[i][TextureTarget.Texture2D].Push(0);
             }
 
             vertexArrays = new Stack<int>();
             vertexArrays.Push(0);
+
+            framebuffers = new Stack<int>();
+            framebuffers.Push(0);
         }
 
         #region Buffer object state
@@ -48,7 +51,7 @@ namespace Messier.Graphics
         }
         #endregion
 
-        #region Buffer object state
+        #region Texture state
         public static void BindTexture(int index, TextureTarget target, int id)
         {
             GL.ActiveTexture(TextureUnit.Texture0 + index);
@@ -78,6 +81,22 @@ namespace Messier.Graphics
         {
             vertexArrays.Pop();
             BindVertexArray(vertexArrays.Pop());
+        }
+        #endregion
+
+        #region Framebuffer State
+        public static void BindFramebuffer(int id)
+        {
+            if (framebuffers.Count == 0) framebuffers.Push(0);
+
+            if (framebuffers.Peek() != id) GL.BindFramebuffer(FramebufferTarget.Framebuffer, id);
+            framebuffers.Push(id);
+        }
+
+        public static void UnbindFramebuffer()
+        {
+            framebuffers.Pop();
+            BindFramebuffer(framebuffers.Pop());
         }
         #endregion
 

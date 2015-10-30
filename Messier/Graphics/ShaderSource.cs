@@ -56,7 +56,7 @@ namespace Messier.Graphics
                     // TODO: dispose managed state (managed objects).
                 }
 
-                GL.DeleteShader(id);
+                if(id != 0)GL.DeleteShader(id);
                 id = 0;
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
                 // TODO: set large fields to null.

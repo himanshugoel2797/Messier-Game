@@ -12,6 +12,6 @@ void main()
 {
 
 	mat4 WVP = World * View * Proj;
+	gl_Position = mul(WVP, vec4(position, 1));
 	UV = position.xy;
-	gl_Position = WVP * vec4(position, 1);
 }

@@ -48,31 +48,34 @@ namespace Messier.Graphics
         public void Set(string name, Vector3 vec)
         {
             int loc = GL.GetProgramResourceLocation(id, ProgramInterface.Uniform, name);
-            if (loc >= 0) GL.Uniform3(loc, vec);
+            if (loc >= 0) GL.ProgramUniform3(id, loc, vec.X, vec.Y, vec.Z);
         }
 
         public void Set(string name, Vector4 vec)
         {
             int loc = GL.GetProgramResourceLocation(id, ProgramInterface.Uniform, name);
-            if (loc >= 0) GL.Uniform4(loc, vec);
+            if (loc >= 0) GL.ProgramUniform4(id, loc, vec.X, vec.Y, vec.Z, vec.W);
         }
 
         public void Set(string name, Vector2 vec)
         {
             int loc = GL.GetProgramResourceLocation(id, ProgramInterface.Uniform, name);
-            if (loc >= 0) GL.Uniform2(loc, vec);
+            if (loc >= 0) GL.ProgramUniform2(id, loc, vec.X, vec.Y);
         }
 
         public void Set(string name, Matrix4 vec)
         {
             int loc = GL.GetProgramResourceLocation(id, ProgramInterface.Uniform, name);
-            if (loc >= 0) GL.UniformMatrix4(loc, false, ref vec);  
+            if (loc >= 0) GL.ProgramUniformMatrix4(id, loc, 1, false, new float[] { vec.M11, vec.M12, vec.M13, vec.M14,
+                                                                                    vec.M21, vec.M22, vec.M23, vec.M24,
+                                                                                    vec.M31, vec.M32, vec.M33, vec.M34,
+                                                                                    vec.M41, vec.M42, vec.M43, vec.M44 });
         }
 
         public void Set(string name, float val)
         {
             int loc = GL.GetProgramResourceLocation(id, ProgramInterface.Uniform, name);
-            if (loc >= 0) GL.Uniform1(loc, val);
+            if (loc >= 0) GL.ProgramUniform1(id, loc, val);
         }
 
         public void Set(string name, int index, Texture t)
@@ -81,7 +84,7 @@ namespace Messier.Graphics
             textures[index] = t;
 
             int loc = GL.GetProgramResourceLocation(id, ProgramInterface.Uniform, name);
-            if (loc >= 0) GL.Uniform1(loc, index);
+            if (loc >= 0) GL.ProgramUniform1(id, loc, index);
         }
 
         internal void BindTextures()
@@ -114,7 +117,7 @@ namespace Messier.Graphics
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
                 // TODO: set large fields to null.
-                GL.DeleteProgram(id);
+                if(id != 0)GL.DeleteProgram(id);
                 id = 0;
 
                 disposedValue = true;

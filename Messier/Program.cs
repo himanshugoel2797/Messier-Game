@@ -21,68 +21,74 @@ namespace Messier
             ShaderProgram prog = null;
             VertexArray varray = null;
             GPUBuffer buf = null;
-            using (var game = new GameWindow())
-            {
-                game.Load += (sender, e) =>
-                {
-                    // setup settings, load textures, sounds
-                    game.VSync = VSyncMode.On;
+            Texture tex = null;
+            BitmapTextureSource bmpTex = new BitmapTextureSource("test.jpg", 0);
+            Matrix4 Proj = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(45), 16f/9f, 0.01f, 100f);
+            Matrix4 View = Matrix4.LookAt(new Vector3(4,3,3), new Vector3(0,0,0), new Vector3(0, 1, 0));
+            Matrix4 World = Matrix4.Identity;
 
-                    varray = new VertexArray();
-                    float[] data =
-                    { -1, -1, 0,
+
+            GraphicsDevice.Load += () =>
+            {
+                // setup settings, load textures, sounds
+
+                varray = new VertexArray();
+                float[] data =
+                {     -1, -1, 0,
                        1, -1, 0,
                        0, 1, 0
-                    };
-
-                    ShaderSource vert = ShaderSource.Load(ShaderType.VertexShader, "Shaders/vertex.glsl");
-                    ShaderSource frag = ShaderSource.Load(ShaderType.FragmentShader, "Shaders/fragment.glsl");
-
-                    prog = new ShaderProgram(vert, frag);
-
-                    vert.Dispose();
-                    frag.Dispose();
-
-                    buf = new GPUBuffer(BufferTarget.ArrayBuffer);
-                    buf.BufferData(0, data, BufferUsageHint.StaticDraw);
-
-                    varray.SetBufferObject(0, buf, 3, VertexAttribPointerType.Float);
                 };
 
-                game.Resize += (sender, e) =>
+                ShaderSource vert = ShaderSource.Load(ShaderType.VertexShader, "Shaders/vertex.glsl");
+                ShaderSource frag = ShaderSource.Load(ShaderType.FragmentShader, "Shaders/fragment.glsl");
+                
+                tex = new Texture();
+                tex.SetData(bmpTex);
+
+                prog = new ShaderProgram(vert, frag);
+                prog.Set("img", 0, tex);
+                prog.Set("World", World);
+                prog.Set("View", View);
+                prog.Set("Proj", Proj);
+
+                vert.Dispose();
+                frag.Dispose();
+
+                buf = new GPUBuffer(BufferTarget.ArrayBuffer);
+                buf.BufferData(0, data, BufferUsageHint.StaticDraw);
+
+                varray.SetBufferObject(0, buf, 3, VertexAttribPointerType.Float);
+            };
+
+            GraphicsDevice.Update += (e) =>
+            {
+                // add game logic, input handling
+                if (GraphicsDevice.Keyboard[Key.Escape])
                 {
-                    Graphics.GPUStateMachine.SetViewport(0, 0, game.Width, game.Height);
-                };
+                    GraphicsDevice.Exit();
+                }
+            };
 
-                game.UpdateFrame += (sender, e) =>
-                {
-                    // add game logic, input handling
-                    if (game.Keyboard[Key.Escape])
-                    {
-                        game.Exit();
-                    }
-                };
+            GraphicsDevice.Render += (e) =>
+            {
+                GraphicsDevice.Clear();
 
-                game.RenderFrame += (sender, e) =>
-                {
-                    // render graphics
-                    GL.ClearColor(0, 0.5f, 1.0f, 0.0f);
-                    GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-                    GraphicsDevice.SetShaderProgram(prog);
-                    GraphicsDevice.SetVertexArray(varray);
-                    GraphicsDevice.Draw(PrimitiveType.Triangles, 0, 3);
+                GraphicsDevice.SetShaderProgram(prog);
+                GraphicsDevice.SetVertexArray(varray);
+                GraphicsDevice.Draw(PrimitiveType.Triangles, 0, 3);
 
-                    game.SwapBuffers();
-                };
+                GraphicsDevice.SwapBuffers();
+            };
 
-                game.Title = "Messier";
-                // Run the game at 60 updates per second
-                game.Run(60.0);
-                varray.Dispose();
-                buf.Dispose();
-                prog.Dispose();
-            }
+            GraphicsDevice.Name = "The Julis Faction";
+            // Run the game at 60 updates per second
+            GraphicsDevice.Run(60.0, 60.0);
+            varray.Dispose();
+            buf.Dispose();
+            prog.Dispose();
+            tex.Dispose();
+            bmpTex.Dispose();
         }
     }
 }

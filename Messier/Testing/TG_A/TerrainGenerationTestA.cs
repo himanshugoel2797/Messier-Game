@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Messier.Math
+namespace Messier.Testing.TG_A
 {
-    class VectorN<T>
+    public class TerrainGenerationTestA
     {
+        
     }
 }
