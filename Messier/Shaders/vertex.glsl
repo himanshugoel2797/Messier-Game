@@ -11,7 +11,7 @@ out vec2 UV;
 void main()
 {
 
-	mat4 WVP = World * View * Proj;
+	mat4 WVP = Proj * View * World;
 	UV = position.xy;
 	gl_Position = WVP * vec4(position, 1);
 }

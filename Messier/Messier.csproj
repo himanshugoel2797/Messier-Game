@@ -56,11 +56,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Graphics\BitmapTextureSource.cs" />
+    <Compile Include="Graphics\Cameras\Camera.cs" />
+    <Compile Include="Graphics\Cameras\FirstPersonCamera.cs" />
     <Compile Include="Graphics\DepthTextureSource.cs" />
     <Compile Include="Graphics\Framebuffer.cs" />
     <Compile Include="Graphics\GPUBuffer.cs" />
     <Compile Include="Graphics\GPUStateMachine.cs" />
+    <Compile Include="Graphics\GraphicsContext.cs" />
     <Compile Include="Graphics\GraphicsDevice.cs" />
+    <Compile Include="Graphics\Input\Keyboard.cs" />
+    <Compile Include="Graphics\Input\LowLevel\Input.cs" />
+    <Compile Include="Graphics\Input\Mouse.cs" />
     <Compile Include="Graphics\ShaderProgram.cs" />
     <Compile Include="Graphics\ShaderSource.cs" />
     <Compile Include="Graphics\Texture.cs" />
@@ -100,10 +106,18 @@
     <None Include="Shaders\vertex.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Testing\TG_A\fragment.glsl" />
-    <None Include="Testing\TG_A\tesscontrol.glsl" />
-    <None Include="Testing\TG_A\tessdomain.glsl" />
-    <None Include="Testing\TG_A\vertex.glsl" />
+    <None Include="Testing\TG_A\fragment.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Testing\TG_A\tesscontrol.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Testing\TG_A\tessdomain.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Testing\TG_A\vertex.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

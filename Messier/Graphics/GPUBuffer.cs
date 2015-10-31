@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using OpenTK.Graphics.OpenGL4;
+using System.Runtime.InteropServices;
 
 namespace Messier.Graphics
 {
@@ -18,11 +19,11 @@ namespace Messier.Graphics
             this.target = target;
         }
 
-        public void BufferData(int offset, float[] data, BufferUsageHint hint)
+        public void BufferData<T>(int offset, T[] data, BufferUsageHint hint) where T : struct
         {
             GPUStateMachine.BindBuffer(target, id);
 
-            GL.BufferData(target, (IntPtr)(sizeof(float) * data.Length), data, hint);
+            GL.BufferData(target, (IntPtr)(Marshal.SizeOf(data[0]) * data.Length), data, hint);
 
             GPUStateMachine.UnbindBuffer(target);
         }

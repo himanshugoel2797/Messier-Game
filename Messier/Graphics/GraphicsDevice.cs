@@ -1,4 +1,5 @@
-﻿using OpenTK;
+﻿using Messier.Graphics.Input.LowLevel;
+using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,7 @@ namespace Messier.Graphics
         static VertexArray curVarray;
         static ShaderProgram curProg;
         static Framebuffer curFramebuffer;
+        static GPUBuffer curIndices;
         static GameWindow game;
 
         public static string Name {
@@ -29,6 +31,21 @@ namespace Messier.Graphics
         public static Action<double> Render { get; set; }
         public static Action<double> Update { get; set; }
         public static OpenTK.Input.KeyboardDevice Keyboard { get { return game.Keyboard; } }
+        public static OpenTK.Input.MouseDevice Mouse { get { return game.Mouse; } }
+        public static int PatchCount
+        {
+            set
+            {
+                GL.PatchParameter(PatchParameterInt.PatchVertices, value);
+            }
+        }
+        public static bool Wireframe
+        {
+            set
+            {
+                GL.PolygonMode(MaterialFace.FrontAndBack, value?PolygonMode.Line:PolygonMode.Fill);
+            }
+        }
 
         static GraphicsDevice()
         {
@@ -76,6 +93,7 @@ namespace Messier.Graphics
         private static void Window_Resize(object sender, EventArgs e)
         {
             GPUStateMachine.SetViewport(0, 0, game.Width, game.Height);
+            InputLL.SetWinXY(game.Location.X, game.Location.Y, game.ClientSize.Width, game.ClientSize.Height);
         }
 
         public static void SetShaderProgram(ShaderProgram prog)
@@ -88,19 +106,29 @@ namespace Messier.Graphics
             curVarray = varray;
         }
 
+        public static void SetIndexBuffer(GPUBuffer indices)
+        {
+            if (indices.target != BufferTarget.ElementArrayBuffer) throw new ArgumentException("Argument must be an index buffer!");
+            curIndices = indices;
+        }
+
         public static void Draw(PrimitiveType type, int first, int count)
         {
             if (curVarray == null) return;
             if (curProg == null) return;
             if (curFramebuffer == null) return;
+            //if (curIndices == null) return;
 
             GPUStateMachine.BindFramebuffer(curFramebuffer.id);
             GL.UseProgram(curProg.id);
             curProg.BindTextures();
             GPUStateMachine.BindVertexArray(curVarray.id);
+            if(curIndices != null)GPUStateMachine.BindBuffer(BufferTarget.ElementArrayBuffer, curIndices.id);
 
-            GL.DrawArrays(type, first, count);
+            if (curIndices != null) GL.DrawElements(type, count, DrawElementsType.UnsignedInt, IntPtr.Zero);
+            else GL.DrawArrays(type, first, count);
 
+            if(curIndices != null)GPUStateMachine.UnbindBuffer(BufferTarget.ElementArrayBuffer);
             GPUStateMachine.UnbindVertexArray();
             curProg.UnbindTextures();
             GL.UseProgram(0);
@@ -108,6 +136,7 @@ namespace Messier.Graphics
 
             curVarray = null;
             curProg = null;
+            curIndices = null;
             curFramebuffer = Framebuffer.Default;
         }
 
