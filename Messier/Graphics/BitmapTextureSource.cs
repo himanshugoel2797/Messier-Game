@@ -21,6 +21,7 @@ namespace Messier.Graphics
         public BitmapTextureSource(Bitmap bmp, int mipmapLevels)
         {
             srcBmp = (Bitmap)bmp.Clone();
+            srcBmp.RotateFlip(RotateFlipType.Rotate180FlipX);
             Width = bmp.Width;
             Height = bmp.Height;
             Levels = mipmapLevels;

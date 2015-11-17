@@ -19,6 +19,15 @@ namespace Messier.Graphics
         public int Depth { get; internal set; }
         public int LevelCount { get; internal set; }
 
+        public static float MaxAnisotropy { get; internal set; }
+
+        static Texture()
+        {
+            float a = 0;
+            GL.GetFloat((GetPName)OpenTK.Graphics.OpenGL.ExtTextureFilterAnisotropic.MaxTextureMaxAnisotropyExt, out a);
+            MaxAnisotropy = a;
+        }
+
         public Texture()
         {
             id = GL.GenTexture();
@@ -53,6 +62,29 @@ namespace Messier.Graphics
             this.texTarget = src.GetTextureTarget();
         }
 
+        public void SetTileMode(bool tileX, bool tileY)
+        {
+            GPUStateMachine.BindTexture(0, texTarget, id);
+            GL.TexParameter(texTarget, TextureParameterName.TextureWrapS, tileX ? (int)TextureWrapMode.Repeat : (int)TextureWrapMode.ClampToEdge);
+            GL.TexParameter(texTarget, TextureParameterName.TextureWrapT, tileY ? (int)TextureWrapMode.Repeat : (int)TextureWrapMode.ClampToEdge);
+            GPUStateMachine.UnbindTexture(0, texTarget);
+        }
+
+        public void SetEnableLinearFilter(bool linear)
+        {
+            GPUStateMachine.BindTexture(0, texTarget, id);
+            GL.TexParameter(texTarget, TextureParameterName.TextureMagFilter, linear ? (int)TextureMagFilter.Linear : (int)TextureMagFilter.Nearest);
+            GL.TexParameter(texTarget, TextureParameterName.TextureMinFilter, linear ? (int)TextureMinFilter.Linear : (int)TextureMinFilter.Nearest);
+            GPUStateMachine.UnbindTexture(0, texTarget);
+        }
+
+        public void SetAnisotropicFilter(float taps)
+        {
+            GPUStateMachine.BindTexture(0, texTarget, id);
+            GL.TexParameter(texTarget, (TextureParameterName)All.TextureMaxAnisotropyExt, taps);
+            GPUStateMachine.UnbindTexture(0, texTarget);
+        }
+
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
 
@@ -65,7 +97,7 @@ namespace Messier.Graphics
                     // TODO: dispose managed state (managed objects).
                 }
 
-                if(id != 0)GL.DeleteTexture(id);
+                if (id != 0) GL.DeleteTexture(id);
                 id = 0;
 
                 disposedValue = true;

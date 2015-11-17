@@ -1,4 +1,5 @@
-﻿using Messier.Graphics;
+﻿using Messier.Engine;
+using Messier.Graphics;
 using Messier.Graphics.Cameras;
 using Messier.Graphics.Prefabs;
 using OpenTK;
@@ -26,7 +27,10 @@ namespace Messier.Testing.TG_A
                 Camera = new FirstPersonCamera(new Vector3(4, 3, 3), Vector3.UnitY)
             };
 
-            BitmapTextureSource bmpTex = new BitmapTextureSource("test.jpg", 0);
+            BitmapTextureSource bmpTex;
+            bmpTex = new BitmapTextureSource("test.jpg", 0);
+            //bmpTex = TextDrawer.CreateWriter("Times New Roman", FontStyle.Regular).Write("Hello ABCDEFGHI!", 200, System.Drawing.Color.White);
+
             Matrix4 World = Matrix4.Identity;
             float timer = 0;
 
@@ -34,7 +38,7 @@ namespace Messier.Testing.TG_A
             GraphicsDevice.Load += () =>
             {
                 // setup settings, load textures, sounds
-                GraphicsDevice.Wireframe = true;
+                // GraphicsDevice.Wireframe = true;
 
                 varray = new VertexArray();
                 float[] data =
@@ -56,6 +60,7 @@ namespace Messier.Testing.TG_A
 
                 tex = new Texture();
                 tex.SetData(bmpTex);
+                tex.SetAnisotropicFilter(Texture.MaxAnisotropy);
 
                 prog = new ShaderProgram(vert, tctrl, teval, frag);
                 prog.Set("img", 0, tex);
@@ -66,11 +71,13 @@ namespace Messier.Testing.TG_A
                 tctrl.Dispose();
                 teval.Dispose();
 
-                buf = new GPUBuffer(BufferTarget.ArrayBuffer);
-                buf.BufferData(0, data, BufferUsageHint.StaticDraw);
+                //buf = new GPUBuffer(BufferTarget.ArrayBuffer);
+                //buf.BufferData(0, data, BufferUsageHint.StaticDraw);
 
-                indexBuf = new GPUBuffer(BufferTarget.ElementArrayBuffer);
-                indexBuf.BufferData(0, indexData, BufferUsageHint.StaticDraw);
+                //indexBuf = new GPUBuffer(BufferTarget.ElementArrayBuffer);
+                //indexBuf.BufferData(0, indexData, BufferUsageHint.StaticDraw);
+                buf = FullScreenQuadFactory.CreateVertices();
+                indexBuf = FullScreenQuadFactory.CreateIndices();
 
                 varray.SetBufferObject(0, buf, 3, VertexAttribPointerType.Float);
             };
