@@ -6,7 +6,7 @@ in vec2 texCoordPS_in;
 
 uniform float timer;
 uniform sampler2D img;
-uniform vec3 viewPos;
+uniform vec3 eyePos;
 
 float chiGGX(float v)
 {
@@ -61,11 +61,11 @@ vec3 cook_torrance(vec3 lightPos, vec3 normal, vec3 viewPos, float ior, float ro
 
 void main()
 {
-	vec3 lightPos = viewPos;
+	vec3 lightPos = eyePos;
 	//vec3 lightPos = vec3(1.0f, 1.0f, 1.0f);
 	vec3 normal = vec3(0, 0.0f, -1.0f);
 	float ior = 0.1f;
 	float roughness = 1.0f;
 
-	Color = texture2D(img, texCoordPS_in) * vec4(cook_torrance(lightPos, normal, viewPos, ior, roughness), 1);
+	Color = texture2D(img, texCoordPS_in) * vec4(cook_torrance(lightPos, normal, eyePos, ior, roughness), 1);
 }

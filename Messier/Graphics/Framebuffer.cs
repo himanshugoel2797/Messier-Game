@@ -15,14 +15,11 @@ namespace Messier.Graphics
         {
             Default = new Framebuffer(0, 0);
             Default.id = 0;
-            Default.bindings = null;
+            Default.bindings[FramebufferAttachment.ColorAttachment0] = null;
         }
 
         internal int id;
         internal Dictionary<FramebufferAttachment, Texture> bindings;
-
-        #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
 
         public Framebuffer(int width, int height)
         {
@@ -45,6 +42,9 @@ namespace Messier.Graphics
                 else return null;
             }
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
         {

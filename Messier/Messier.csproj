@@ -67,6 +67,7 @@
     <Compile Include="Graphics\Input\Keyboard.cs" />
     <Compile Include="Graphics\Input\LowLevel\Input.cs" />
     <Compile Include="Graphics\Input\Mouse.cs" />
+    <Compile Include="Graphics\Prefabs\FullScreenQuadFactory.cs" />
     <Compile Include="Graphics\ShaderProgram.cs" />
     <Compile Include="Graphics\ShaderSource.cs" />
     <Compile Include="Graphics\Texture.cs" />
@@ -130,9 +131,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="TJF\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -85,7 +85,7 @@ namespace Messier.Testing.TG_A
 
                 prog.Set("View", context.View);
                 prog.Set("Proj", context.Projection);
-                prog.Set("viewPos", context.Camera.Position);
+                prog.Set("eyePos", context.Camera.Position);
 
                 timer += 0.01f;
                 prog.Set("timer", timer);

@@ -112,14 +112,22 @@ namespace Messier.Graphics
             curIndices = indices;
         }
 
+        public static void SetFramebuffer(Framebuffer framebuf)
+        {
+            curFramebuffer = framebuf;
+        }
+
         public static void Draw(PrimitiveType type, int first, int count)
         {
             if (curVarray == null) return;
             if (curProg == null) return;
             if (curFramebuffer == null) return;
-            //if (curIndices == null) return;
 
             GPUStateMachine.BindFramebuffer(curFramebuffer.id);
+
+            GL.DrawBuffers(curFramebuffer.bindings.Keys.Count,
+                curFramebuffer.bindings.Keys.OrderByDescending((a) => (int)a).Reverse().Cast<DrawBuffersEnum>().ToArray());
+
             GL.UseProgram(curProg.id);
             curProg.BindTextures();
             GPUStateMachine.BindVertexArray(curVarray.id);
