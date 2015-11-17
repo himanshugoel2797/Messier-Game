@@ -1,5 +1,6 @@
 ﻿using Messier.Graphics;
 using Messier.Graphics.Cameras;
+using Messier.Graphics.Prefabs;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Input;
@@ -33,7 +34,7 @@ namespace Messier.Testing.TG_A
             GraphicsDevice.Load += () =>
             {
                 // setup settings, load textures, sounds
-                //GraphicsDevice.Wireframe = true;
+                GraphicsDevice.Wireframe = true;
 
                 varray = new VertexArray();
                 float[] data =
@@ -46,6 +47,7 @@ namespace Messier.Testing.TG_A
                 {
                     0, 1, 2
                 };
+
 
                 ShaderSource vert = ShaderSource.Load(ShaderType.VertexShader, "Testing/TG_A/vertex.glsl");
                 ShaderSource frag = ShaderSource.Load(ShaderType.FragmentShader, "Shaders/fragment.glsl");
@@ -82,6 +84,8 @@ namespace Messier.Testing.TG_A
                 }
 
                 context.Update(e);
+                context.Projection = Matrix4.Identity;
+                context.View = Matrix4.Identity;
 
                 prog.Set("View", context.View);
                 prog.Set("Proj", context.Projection);
@@ -99,7 +103,7 @@ namespace Messier.Testing.TG_A
                 GraphicsDevice.SetShaderProgram(prog);
                 GraphicsDevice.SetVertexArray(varray);
                 GraphicsDevice.PatchCount = 3;
-                GraphicsDevice.Draw(PrimitiveType.Patches, 0, 3);
+                GraphicsDevice.Draw(PrimitiveType.Patches, 0, 6);
 
                 GraphicsDevice.SwapBuffers();
             };
@@ -113,6 +117,7 @@ namespace Messier.Testing.TG_A
             prog.Dispose();
             tex.Dispose();
             bmpTex.Dispose();
+            if(GraphicsDevice.Cleanup != null)GraphicsDevice.Cleanup();
         }
     }
 }

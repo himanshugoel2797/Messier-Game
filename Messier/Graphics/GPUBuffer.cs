@@ -30,6 +30,7 @@ namespace Messier.Graphics
 
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
+        public bool Disposed { get { return disposedValue; } }
 
         protected virtual void Dispose(bool disposing)
         {

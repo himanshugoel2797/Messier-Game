@@ -12,6 +12,18 @@ namespace Messier.Graphics.Prefabs
 
         static FullScreenQuadFactory()
         {
+            Init();
+
+            GraphicsDevice.Cleanup += () =>
+            {
+                vbuffer.Dispose();
+                ibuffer.Dispose();
+                uvbuffer.Dispose();
+            };
+        }
+
+        private static void Init()
+        {
             vbuffer = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ArrayBuffer);
             ibuffer = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ElementArrayBuffer);
             uvbuffer = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ArrayBuffer);
@@ -34,16 +46,19 @@ namespace Messier.Graphics.Prefabs
 
         public static GPUBuffer CreateVertices()
         {
+            if (vbuffer == null || vbuffer.Disposed) Init();
             return vbuffer;
         }
 
         public static GPUBuffer CreateIndices()
         {
+            if (ibuffer == null || ibuffer.Disposed) Init();
             return ibuffer;
         }
 
         public static GPUBuffer CreateUVs()
         {
+            if (uvbuffer == null || uvbuffer.Disposed) Init();
             return uvbuffer;
         }
     }
