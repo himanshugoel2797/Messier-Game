@@ -59,6 +59,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Engine\BoundingBox.cs" />
+    <Compile Include="Engine\SceneGraph\EngineObject.cs" />
+    <Compile Include="Engine\SceneGraph\ObjectBatch.cs" />
     <Compile Include="Engine\TextWriter.cs" />
     <Compile Include="Graphics\BitmapTextureSource.cs" />
     <Compile Include="Graphics\Cameras\Camera.cs" />

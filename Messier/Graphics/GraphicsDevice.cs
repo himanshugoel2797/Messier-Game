@@ -16,6 +16,7 @@ namespace Messier.Graphics
         static Framebuffer curFramebuffer;
         static GPUBuffer curIndices;
         static GameWindow game;
+        static List<Texture> textures;
 
         public static string Name {
             get
@@ -118,11 +119,21 @@ namespace Messier.Graphics
             curFramebuffer = framebuf;
         }
 
+        public static void SetTexture(int slot, Texture tex)
+        {
+            while (textures.Count <= slot)
+                textures.Add(null);
+
+            textures[slot] = tex;
+        }
+
         public static void Draw(PrimitiveType type, int first, int count)
         {
             if (curVarray == null) return;
             if (curProg == null) return;
             if (curFramebuffer == null) return;
+
+            for (int i = 0; i < textures.Count; i++) GPUStateMachine.BindTexture(i, textures[i].texTarget, textures[i].id);
 
             GPUStateMachine.BindFramebuffer(curFramebuffer.id);
 
@@ -146,6 +157,7 @@ namespace Messier.Graphics
             curVarray = null;
             curProg = null;
             curIndices = null;
+            textures.Clear();
             curFramebuffer = Framebuffer.Default;
         }
 

@@ -28,8 +28,8 @@ namespace Messier.Testing.TG_A
             };
 
             BitmapTextureSource bmpTex;
-            bmpTex = new BitmapTextureSource("test.jpg", 0);
-            //bmpTex = TextDrawer.CreateWriter("Times New Roman", FontStyle.Regular).Write("Hello ABCDEFGHI!", 200, System.Drawing.Color.White);
+            //bmpTex = new BitmapTextureSource("test.jpg", 0);
+            bmpTex = TextDrawer.CreateWriter("Times New Roman", FontStyle.Regular).Write("Hello ABCDEFGHI!", 200, System.Drawing.Color.White);
 
             Matrix4 World = Matrix4.Identity;
             float timer = 0;
