@@ -17,6 +17,7 @@ namespace Messier.Graphics
         {
             id = GL.GenBuffer();
             this.target = target;
+            GraphicsDevice.Cleanup += Dispose;
         }
 
         public void BufferData<T>(int offset, T[] data, BufferUsageHint hint) where T : struct

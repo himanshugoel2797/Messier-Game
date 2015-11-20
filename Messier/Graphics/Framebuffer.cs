@@ -25,6 +25,7 @@ namespace Messier.Graphics
         {
             id = GL.GenFramebuffer();
             bindings = new Dictionary<FramebufferAttachment, Texture>();
+            GraphicsDevice.Cleanup += Dispose;
         }
 
         public Texture this[FramebufferAttachment attachment]

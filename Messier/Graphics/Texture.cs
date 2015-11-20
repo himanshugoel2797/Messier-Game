@@ -31,6 +31,7 @@ namespace Messier.Graphics
         public Texture()
         {
             id = GL.GenTexture();
+            GraphicsDevice.Cleanup += Dispose;
         }
 
         public void SetData(ITextureSource src)

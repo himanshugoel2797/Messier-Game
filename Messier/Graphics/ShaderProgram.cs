@@ -11,7 +11,6 @@ namespace Messier.Graphics
     public class ShaderProgram : IDisposable
     {
         internal int id;
-        Texture[] textures;
 
         public ShaderProgram(params ShaderSource[] shaders)
         {
@@ -42,7 +41,7 @@ namespace Messier.Graphics
                 GL.DetachShader(id, shaders[i].id);
             }
 
-            textures = new Texture[8];
+            GraphicsDevice.Cleanup += Dispose;
         }
 
         public void Set(string name, Vector3 vec)
@@ -78,29 +77,10 @@ namespace Messier.Graphics
             if (loc >= 0) GL.ProgramUniform1(id, loc, val);
         }
 
-        public void Set(string name, int index, Texture t)
+        public void Set(string name, int index)
         {
-            //TODO this needs changing, this isn't the way to bind textures
-            textures[index] = t;
-
             int loc = GL.GetProgramResourceLocation(id, ProgramInterface.Uniform, name);
             if (loc >= 0) GL.ProgramUniform1(id, loc, index);
-        }
-
-        internal void BindTextures()
-        {
-            for(int i = 0; i < textures.Length; i++)
-            {
-                if (textures[i] != null) GPUStateMachine.BindTexture(i, textures[i].texTarget, textures[i].id);
-            }
-        }
-
-        internal void UnbindTextures()
-        {
-            for (int i = 0; i < textures.Length; i++)
-            {
-                if (textures[i] != null) GPUStateMachine.UnbindTexture(i, textures[i].texTarget);
-            }
         }
 
         #region IDisposable Support

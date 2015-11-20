@@ -14,6 +14,7 @@ namespace Messier.Graphics
         public VertexArray()
         {
             id = GL.GenVertexArray();
+            GraphicsDevice.Cleanup += Dispose;
         }
 
         public void SetBufferObject(int index, GPUBuffer buffer, int elementCount, VertexAttribPointerType type)

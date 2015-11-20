@@ -41,6 +41,7 @@ namespace Messier.Graphics
                 Console.WriteLine(errorLog);
                 throw new Exception("Shader Compilation Exception : " + errorLog);
             }
+            GraphicsDevice.Cleanup += Dispose;
         }
 
 

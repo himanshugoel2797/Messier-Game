@@ -49,6 +49,27 @@ namespace Messier.Graphics
             }
         }
 
+        static bool aEnabled = false;
+        public static bool AlphaEnabled
+        {
+            get
+            {
+                return aEnabled;
+            }
+            set
+            {
+                aEnabled = value;
+                if(aEnabled)
+                {
+                    GL.Enable(EnableCap.Blend);
+                    GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+                }
+                else
+                {
+                    GL.Disable(EnableCap.Blend);
+                }
+            }
+        }
         static GraphicsDevice()
         {
             game = new GameWindow();
@@ -60,6 +81,7 @@ namespace Messier.Graphics
             curVarray = null;
             curProg = null;
             curFramebuffer = Framebuffer.Default;
+            textures = new List<Texture>();
         }
 
         public static void Run(double ups, double fps)
@@ -141,7 +163,6 @@ namespace Messier.Graphics
                 curFramebuffer.bindings.Keys.OrderByDescending((a) => (int)a).Reverse().Cast<DrawBuffersEnum>().ToArray());
 
             GL.UseProgram(curProg.id);
-            curProg.BindTextures();
             GPUStateMachine.BindVertexArray(curVarray.id);
             if(curIndices != null)GPUStateMachine.BindBuffer(BufferTarget.ElementArrayBuffer, curIndices.id);
 
@@ -150,7 +171,6 @@ namespace Messier.Graphics
 
             if(curIndices != null)GPUStateMachine.UnbindBuffer(BufferTarget.ElementArrayBuffer);
             GPUStateMachine.UnbindVertexArray();
-            curProg.UnbindTextures();
             GL.UseProgram(0);
             GPUStateMachine.UnbindFramebuffer();
 

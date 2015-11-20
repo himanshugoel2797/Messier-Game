@@ -1,4 +1,5 @@
 ﻿using Messier.Engine;
+using Messier.Engine.SceneGraph;
 using Messier.Graphics;
 using Messier.Graphics.Cameras;
 using Messier.Graphics.Prefabs;
@@ -18,20 +19,19 @@ namespace Messier.Testing.TG_A
         public static void Run()
         {
             ShaderProgram prog = null;
-            VertexArray varray = null;
-            GPUBuffer buf = null, indexBuf = null;
-            Texture tex = null;
+            Texture tex = null, t2 = null;
 
             GraphicsContext context = new GraphicsContext()
             {
                 Camera = new FirstPersonCamera(new Vector3(4, 3, 3), Vector3.UnitY)
             };
 
-            BitmapTextureSource bmpTex;
-            //bmpTex = new BitmapTextureSource("test.jpg", 0);
+            BitmapTextureSource bmpTex, b2;
             bmpTex = TextDrawer.CreateWriter("Times New Roman", FontStyle.Regular).Write("Hello ABCDEFGHI!", 200, System.Drawing.Color.White);
+            b2 = new BitmapTextureSource("test.jpg", 0);
 
             Matrix4 World = Matrix4.Identity;
+            EngineObject eObj = null;
             float timer = 0;
 
 
@@ -39,8 +39,9 @@ namespace Messier.Testing.TG_A
             {
                 // setup settings, load textures, sounds
                 // GraphicsDevice.Wireframe = true;
+                GraphicsDevice.AlphaEnabled = true;
 
-                varray = new VertexArray();
+                eObj = new EngineObject();
                 float[] data =
                 {     -1, -1, 1,
                        1, -1, 1,
@@ -62,8 +63,12 @@ namespace Messier.Testing.TG_A
                 tex.SetData(bmpTex);
                 tex.SetAnisotropicFilter(Texture.MaxAnisotropy);
 
+                t2 = new Texture();
+                t2.SetData(b2);
+                t2.SetAnisotropicFilter(Texture.MaxAnisotropy);
+
                 prog = new ShaderProgram(vert, tctrl, teval, frag);
-                prog.Set("img", 0, tex);
+                prog.Set("img", 0);
                 prog.Set("World", World);
 
                 vert.Dispose();
@@ -71,15 +76,10 @@ namespace Messier.Testing.TG_A
                 tctrl.Dispose();
                 teval.Dispose();
 
-                //buf = new GPUBuffer(BufferTarget.ArrayBuffer);
-                //buf.BufferData(0, data, BufferUsageHint.StaticDraw);
-
-                //indexBuf = new GPUBuffer(BufferTarget.ElementArrayBuffer);
-                //indexBuf.BufferData(0, indexData, BufferUsageHint.StaticDraw);
-                buf = FullScreenQuadFactory.CreateVertices();
-                indexBuf = FullScreenQuadFactory.CreateIndices();
-
-                varray.SetBufferObject(0, buf, 3, VertexAttribPointerType.Float);
+                //eObj.SetVertices(0, data, false);
+                //eObj.SetIndices(0, indexData, false);
+                eObj = FullScreenQuadFactory.Create();
+                eObj.SetTexture(0, tex);
             };
 
             GraphicsDevice.Update += (e) =>
@@ -106,9 +106,8 @@ namespace Messier.Testing.TG_A
             {
                 GraphicsDevice.Clear();
 
-                GraphicsDevice.SetIndexBuffer(indexBuf);
+                eObj.Bind();
                 GraphicsDevice.SetShaderProgram(prog);
-                GraphicsDevice.SetVertexArray(varray);
                 GraphicsDevice.PatchCount = 3;
                 GraphicsDevice.Draw(PrimitiveType.Patches, 0, 6);
 
@@ -118,12 +117,6 @@ namespace Messier.Testing.TG_A
             GraphicsDevice.Name = "The Julis Faction";
             // Run the game at 60 updates per second
             GraphicsDevice.Run(60.0, 60.0);
-            varray.Dispose();
-            buf.Dispose();
-            indexBuf.Dispose();
-            prog.Dispose();
-            tex.Dispose();
-            bmpTex.Dispose();
             if(GraphicsDevice.Cleanup != null)GraphicsDevice.Cleanup();
         }
     }
