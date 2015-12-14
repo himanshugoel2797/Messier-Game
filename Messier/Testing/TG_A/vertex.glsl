@@ -1,6 +1,7 @@
 ﻿#version 410 core
 
 layout(location = 0) in vec3 position;
+layout(location = 1) in vec2 UV;
 
 uniform mat4 World;
 uniform mat4 View;
@@ -14,5 +15,5 @@ void main()
 {
 	worldCS_in = position;
 	normalCS_in = vec3(0, 1, 0);
-	texCoordCS_in = position.xy;
+	texCoordCS_in = UV;
 }

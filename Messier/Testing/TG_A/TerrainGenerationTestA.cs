@@ -27,8 +27,12 @@ namespace Messier.Testing.TG_A
             };
 
             BitmapTextureSource bmpTex, b2;
-            bmpTex = TextDrawer.CreateWriter("Times New Roman", FontStyle.Regular).Write("Hello ABCDEFGHI!", 200, System.Drawing.Color.White);
+            bmpTex = TextDrawer.CreateWriter("Times New Roman", FontStyle.Regular).Write("Hello!", 200, System.Drawing.Color.White);
             b2 = new BitmapTextureSource("test.jpg", 0);
+
+            Texture fbufTex = null;
+            FramebufferTextureSource fbufTexSrc = new FramebufferTextureSource(1920, 1080, 0);
+            Framebuffer fbuf = null;
 
             Matrix4 World = Matrix4.Identity;
             EngineObject eObj = null;
@@ -38,8 +42,11 @@ namespace Messier.Testing.TG_A
             GraphicsDevice.Load += () =>
             {
                 // setup settings, load textures, sounds
-                // GraphicsDevice.Wireframe = true;
+                //GraphicsDevice.Wireframe = true;
                 GraphicsDevice.AlphaEnabled = true;
+                GraphicsDevice.DepthTestEnabled = true;
+                GraphicsDevice.CullEnabled = true;
+                GraphicsDevice.CullMode = CullFaceMode.Back;
 
                 eObj = new EngineObject();
                 float[] data =
@@ -59,6 +66,13 @@ namespace Messier.Testing.TG_A
                 ShaderSource tctrl = ShaderSource.Load(ShaderType.TessControlShader, "Testing/TG_A/tesscontrol.glsl");
                 ShaderSource teval = ShaderSource.Load(ShaderType.TessEvaluationShader, "Testing/TG_A/tessdomain.glsl");
 
+                fbuf = new Framebuffer(1920, 1080);
+                fbufTex = new Texture();
+                fbufTex.SetData(fbufTexSrc);
+                fbuf[FramebufferAttachment.ColorAttachment0] = fbufTex;
+
+                
+
                 tex = new Texture();
                 tex.SetData(bmpTex);
                 tex.SetAnisotropicFilter(Texture.MaxAnisotropy);
@@ -66,6 +80,7 @@ namespace Messier.Testing.TG_A
                 t2 = new Texture();
                 t2.SetData(b2);
                 t2.SetAnisotropicFilter(Texture.MaxAnisotropy);
+
 
                 prog = new ShaderProgram(vert, tctrl, teval, frag);
                 prog.Set("img", 0);
@@ -76,10 +91,9 @@ namespace Messier.Testing.TG_A
                 tctrl.Dispose();
                 teval.Dispose();
 
-                //eObj.SetVertices(0, data, false);
-                //eObj.SetIndices(0, indexData, false);
-                eObj = FullScreenQuadFactory.Create();
-                eObj.SetTexture(0, tex);
+                //eObj = FullScreenQuadFactory.Create();
+                eObj = CubeFactory.Create();
+                eObj.SetTexture(0, t2);
             };
 
             GraphicsDevice.Update += (e) =>
@@ -91,12 +105,14 @@ namespace Messier.Testing.TG_A
                 }
 
                 context.Update(e);
-                context.Projection = Matrix4.Identity;
-                context.View = Matrix4.Identity;
+                //context.Projection = Matrix4.Identity;
+                //context.View = Matrix4.Identity;
 
                 prog.Set("View", context.View);
                 prog.Set("Proj", context.Projection);
                 prog.Set("eyePos", context.Camera.Position);
+
+                prog.Set("Fcoef", (float)(2.0f / Math.Log(1001)/Math.Log(2)));
 
                 timer += 0.01f;
                 prog.Set("timer", timer);
@@ -104,14 +120,16 @@ namespace Messier.Testing.TG_A
 
             GraphicsDevice.Render += (e) =>
             {
+                //GraphicsDevice.SetFramebuffer(fbuf);
                 GraphicsDevice.Clear();
 
                 eObj.Bind();
                 GraphicsDevice.SetShaderProgram(prog);
                 GraphicsDevice.PatchCount = 3;
-                GraphicsDevice.Draw(PrimitiveType.Patches, 0, 6);
+                GraphicsDevice.Draw(PrimitiveType.Patches, 0, eObj.IndexCount);
 
                 GraphicsDevice.SwapBuffers();
+                //GraphicsDevice.SaveTexture(fbufTex, "test.png");
             };
 
             GraphicsDevice.Name = "The Julis Faction";

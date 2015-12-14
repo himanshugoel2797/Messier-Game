@@ -4,6 +4,9 @@ layout(location = 0) out vec4 Color;
 
 in vec2 texCoordPS_in;
 
+in float flogz;
+uniform float Fcoef;
+
 uniform float timer;
 uniform sampler2D img;
 uniform vec3 eyePos;
@@ -68,4 +71,5 @@ void main()
 	float roughness = 1.0f;
 
 	Color = texture2D(img, texCoordPS_in) * vec4(cook_torrance(lightPos, normal, eyePos, ior, roughness), 1);
+	gl_FragDepth = log2(flogz) * Fcoef * 0.5;
 }

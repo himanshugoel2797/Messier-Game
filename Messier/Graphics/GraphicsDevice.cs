@@ -3,12 +3,14 @@ using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Messier.Graphics
 {
+
     public class GraphicsDevice
     {
         static VertexArray curVarray;
@@ -70,6 +72,60 @@ namespace Messier.Graphics
                 }
             }
         }
+
+        static CullFaceMode cullMode = CullFaceMode.Back;
+        public static CullFaceMode CullMode
+        {
+            get
+            {
+                return cullMode;
+            }
+            set
+            {
+                cullMode = value;
+                GL.CullFace(cullMode);
+            }
+        }
+
+        static bool cullEnabled = false;
+        public static bool CullEnabled
+        {
+            get
+            {
+                return cullEnabled;
+            }
+            set
+            {
+                cullEnabled = value;
+                if (cullEnabled)
+                    GL.Enable(EnableCap.CullFace);
+                else
+                    GL.Disable(EnableCap.CullFace);
+            }
+        }
+
+        static bool depthTestEnabled = false;
+        public static bool DepthTestEnabled
+        {
+            get
+            {
+                return depthTestEnabled;
+            }
+            set
+            {
+                depthTestEnabled = value;
+                if(depthTestEnabled)
+                {
+                    GL.Enable(EnableCap.DepthTest);
+                    GL.DepthFunc(DepthFunction.Lequal);
+                }
+                else
+                {
+                    GL.Disable(EnableCap.DepthTest);
+                }
+            }
+        }
+
         static GraphicsDevice()
         {
             game = new GameWindow();
@@ -111,6 +167,7 @@ namespace Messier.Graphics
 
         private static void Game_Load(object sender, EventArgs e)
         {
+            GL.Enable(EnableCap.DepthClamp);
             Load?.Invoke();
         }
 
@@ -159,8 +216,6 @@ namespace Messier.Graphics
 
             GPUStateMachine.BindFramebuffer(curFramebuffer.id);
 
-            GL.DrawBuffers(curFramebuffer.bindings.Keys.Count,
-                curFramebuffer.bindings.Keys.OrderByDescending((a) => (int)a).Reverse().Cast<DrawBuffersEnum>().ToArray());
 
             GL.UseProgram(curProg.id);
             GPUStateMachine.BindVertexArray(curVarray.id);
@@ -173,6 +228,8 @@ namespace Messier.Graphics
             GPUStateMachine.UnbindVertexArray();
             GL.UseProgram(0);
             GPUStateMachine.UnbindFramebuffer();
+
+            for (int i = 0; i < textures.Count; i++) GPUStateMachine.UnbindTexture(i, textures[i].texTarget);
 
             curVarray = null;
             curProg = null;
@@ -187,5 +244,22 @@ namespace Messier.Graphics
             GL.ClearColor(0, 0.5f, 1.0f, 0.0f);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
         }
+
+        public static void SaveTexture(Texture t, string file)
+        {
+#if DEBUG
+            Bitmap bmp = new Bitmap(t.Width, t.Height);
+            System.Drawing.Imaging.BitmapData bmpData;
+
+            bmpData = bmp.LockBits(new Rectangle(0, 0, t.Width, t.Height), System.Drawing.Imaging.ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            GPUStateMachine.BindTexture(0, t.texTarget, t.id);
+            GL.GetTexImage(t.texTarget, 0, PixelFormat.Bgra, PixelType.UnsignedInt8888Reversed, bmpData.Scan0);
+            GPUStateMachine.UnbindTexture(0, t.texTarget);
+            bmp.UnlockBits(bmpData);
+            bmp.RotateFlip(RotateFlipType.Rotate180FlipX);
+            bmp.Save(file);
+#endif
+        }
+
     }
 }

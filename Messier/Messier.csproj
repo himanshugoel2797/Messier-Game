@@ -68,6 +68,7 @@
     <Compile Include="Graphics\Cameras\FirstPersonCamera.cs" />
     <Compile Include="Graphics\DepthTextureSource.cs" />
     <Compile Include="Graphics\Framebuffer.cs" />
+    <Compile Include="Graphics\FramebufferTextureSource.cs" />
     <Compile Include="Graphics\GPUBuffer.cs" />
     <Compile Include="Graphics\GPUStateMachine.cs" />
     <Compile Include="Graphics\GraphicsContext.cs" />
@@ -75,6 +76,7 @@
     <Compile Include="Graphics\Input\Keyboard.cs" />
     <Compile Include="Graphics\Input\LowLevel\Input.cs" />
     <Compile Include="Graphics\Input\Mouse.cs" />
+    <Compile Include="Graphics\Prefabs\CubeFactory.cs" />
     <Compile Include="Graphics\Prefabs\FullScreenQuadFactory.cs" />
     <Compile Include="Graphics\ShaderProgram.cs" />
     <Compile Include="Graphics\ShaderSource.cs" />

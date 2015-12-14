@@ -35,6 +35,15 @@ namespace Messier.Graphics
                 bindings[attachment] = value;
                 GPUStateMachine.BindFramebuffer(id);
                 GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, attachment, value.texTarget, value.id, 0);
+
+                GL.DrawBuffers(bindings.Keys.Count,
+                    bindings.Keys.OrderByDescending((a) => (int)a).Reverse().Cast<DrawBuffersEnum>().ToArray());
+
+                if(GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer) != FramebufferErrorCode.FramebufferComplete)
+                {
+                    throw new Exception("Incomplete Framebuffer!");
+                }
+
                 GPUStateMachine.UnbindFramebuffer();
             }
             get

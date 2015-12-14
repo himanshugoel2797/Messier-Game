@@ -15,6 +15,8 @@ namespace Messier.Engine.SceneGraph
         internal GPUBuffer verts, indices, uvs, norms;
         internal List<Texture> textures;
 
+        public int IndexCount { get; private set; }
+
         private bool lock_changes = false;
 
         public EngineObject()
@@ -34,6 +36,7 @@ namespace Messier.Engine.SceneGraph
             indices = src.indices;
             uvs = src.uvs;
             norms = src.norms;
+            IndexCount = src.IndexCount;
 
             textures = new List<Texture>();
             lock_changes = lockChanges;
@@ -49,6 +52,7 @@ namespace Messier.Engine.SceneGraph
         public void SetIndices(int offset, uint[] i, bool Dynamic)
         {
             if (lock_changes) return;
+            IndexCount = i.Length;
             indices.BufferData(offset, i, Dynamic ? OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicDraw : OpenTK.Graphics.OpenGL4.BufferUsageHint.StaticDraw);
         }
 

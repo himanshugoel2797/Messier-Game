@@ -43,7 +43,7 @@ namespace Messier.Graphics
         {
             if (boundBuffers[target].Count == 0) boundBuffers[target].Push(0);
 
-            if (boundBuffers[target].Peek() != id) GL.BindBuffer(target, id);
+            if (boundBuffers[target].Peek() != id || id == 0) GL.BindBuffer(target, id);
             boundBuffers[target].Push(id);
         }
 
@@ -60,7 +60,7 @@ namespace Messier.Graphics
             GL.ActiveTexture(TextureUnit.Texture0 + index);
             if (boundTextures[index][target].Count == 0) boundTextures[index][target].Push(0);
 
-            if (boundTextures[index][target].Peek() != id) GL.BindTexture(target, id);
+            if (boundTextures[index][target].Peek() != id || id == 0) GL.BindTexture(target, id);
             boundTextures[index][target].Push(id);
         }
 
@@ -76,7 +76,7 @@ namespace Messier.Graphics
         {
             if (vertexArrays.Count == 0) vertexArrays.Push(0);
 
-            if (vertexArrays.Peek() != id) GL.BindVertexArray(id);
+            if (vertexArrays.Peek() != id || id == 0) GL.BindVertexArray(id);
             vertexArrays.Push(id);
         }
 
@@ -92,7 +92,7 @@ namespace Messier.Graphics
         {
             if (framebuffers.Count == 0) framebuffers.Push(0);
 
-            if (framebuffers.Peek() != id) GL.BindFramebuffer(FramebufferTarget.Framebuffer, id);
+            if (framebuffers.Peek() != id || id == 0) GL.BindFramebuffer(FramebufferTarget.Framebuffer, id);
             framebuffers.Push(id);
         }
 
