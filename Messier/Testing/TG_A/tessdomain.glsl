@@ -35,7 +35,7 @@ void main()
    	normalPS_in = normalize(normalPS_in);
    	worldPS_in = interpolate3D(worldES_in[0], worldES_in[1], worldES_in[2]);
 	
-	gl_Position = (Proj * View * World) * vec4(normalize(worldPS_in), 1);
+	gl_Position = (Proj * View * World) * vec4(worldPS_in, 1);
 	gl_Position.z = log2(max(1e-6, 1.0 + gl_Position.w)) * Fcoef - 1.0; 	
 
 	flogz = 1.0 + gl_Position.w;

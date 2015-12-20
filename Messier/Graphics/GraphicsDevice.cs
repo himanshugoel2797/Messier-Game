@@ -128,7 +128,7 @@ namespace Messier.Graphics
 
         static GraphicsDevice()
         {
-            game = new GameWindow();
+            game = new GameWindow((int)(16f/9f * 540), 540);
             game.Resize += Window_Resize;
             game.Load += Game_Load;
             game.RenderFrame += Game_RenderFrame;

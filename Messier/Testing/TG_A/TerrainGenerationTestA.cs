@@ -45,7 +45,7 @@ namespace Messier.Testing.TG_A
                 //GraphicsDevice.Wireframe = true;
                 GraphicsDevice.AlphaEnabled = true;
                 GraphicsDevice.DepthTestEnabled = true;
-                GraphicsDevice.CullEnabled = true;
+                //GraphicsDevice.CullEnabled = true;
                 GraphicsDevice.CullMode = CullFaceMode.Back;
 
                 eObj = new EngineObject();
@@ -115,6 +115,9 @@ namespace Messier.Testing.TG_A
                 prog.Set("Fcoef", (float)(2.0f / Math.Log(1001)/Math.Log(2)));
 
                 timer += 0.01f;
+                World = Matrix4.RotateY(timer);
+                prog.Set("World", World);
+
                 prog.Set("timer", timer);
             };
 
