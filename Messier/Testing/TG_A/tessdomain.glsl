@@ -7,6 +7,8 @@ uniform mat4 View;
 uniform mat4 Proj;
 uniform float Fcoef;
 
+uniform sampler2D heightmap;
+
 in vec3 worldES_in[];
 in vec2 texCoordES_in[];
 in vec3 normalES_in[];
@@ -32,10 +34,10 @@ void main()
 	// Interpolate the attributes of the output vertex using the barycentric coordinates
    	texCoordPS_in = interpolate2D(texCoordES_in[0], texCoordES_in[1], texCoordES_in[2]);
    	normalPS_in = interpolate3D(normalES_in[0], normalES_in[1], normalES_in[2]);
-   	normalPS_in = normalize(normalPS_in);
    	worldPS_in = interpolate3D(worldES_in[0], worldES_in[1], worldES_in[2]);
+   	normalPS_in = normalize(worldPS_in);
 	
-	gl_Position = (Proj * View * World) * vec4(worldPS_in, 1);
+	gl_Position = (Proj * View * World) * vec4(normalize(worldPS_in) + texture(heightmap, texCoordPS_in).r * 0.15f * normalPS_in, 1);
 	gl_Position.z = log2(max(1e-6, 1.0 + gl_Position.w)) * Fcoef - 1.0; 	
 
 	flogz = 1.0 + gl_Position.w;

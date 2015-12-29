@@ -168,6 +168,7 @@ namespace Messier.Graphics
         private static void Game_Load(object sender, EventArgs e)
         {
             GL.Enable(EnableCap.DepthClamp);
+            GL.Enable(EnableCap.TextureCubeMapSeamless);
             Load?.Invoke();
         }
 

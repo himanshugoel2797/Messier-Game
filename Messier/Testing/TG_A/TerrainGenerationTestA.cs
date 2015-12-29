@@ -26,11 +26,12 @@ namespace Messier.Testing.TG_A
                 Camera = new FirstPersonCamera(new Vector3(4, 3, 3), Vector3.UnitY)
             };
 
-            BitmapTextureSource bmpTex, b2;
+            BitmapTextureSource bmpTex, b2, b3;
             bmpTex = TextDrawer.CreateWriter("Times New Roman", FontStyle.Regular).Write("Hello!", 200, System.Drawing.Color.White);
             b2 = new BitmapTextureSource("test.jpg", 0);
+            b3 = new BitmapTextureSource("heightmap.png", 0);
 
-            Texture fbufTex = null;
+            Texture fbufTex = null, t3 = null;
             FramebufferTextureSource fbufTexSrc = new FramebufferTextureSource(1920, 1080, 0);
             Framebuffer fbuf = null;
 
@@ -45,7 +46,7 @@ namespace Messier.Testing.TG_A
                 //GraphicsDevice.Wireframe = true;
                 GraphicsDevice.AlphaEnabled = true;
                 GraphicsDevice.DepthTestEnabled = true;
-                //GraphicsDevice.CullEnabled = true;
+                GraphicsDevice.CullEnabled = true;
                 GraphicsDevice.CullMode = CullFaceMode.Back;
 
                 eObj = new EngineObject();
@@ -71,7 +72,8 @@ namespace Messier.Testing.TG_A
                 fbufTex.SetData(fbufTexSrc);
                 fbuf[FramebufferAttachment.ColorAttachment0] = fbufTex;
 
-                
+                t3 = new Texture();
+                t3.SetData(b3);
 
                 tex = new Texture();
                 tex.SetData(bmpTex);
@@ -83,7 +85,8 @@ namespace Messier.Testing.TG_A
 
 
                 prog = new ShaderProgram(vert, tctrl, teval, frag);
-                prog.Set("img", 0);
+                prog.Set("img", 1);
+                prog.Set("heightmap", 1);
                 prog.Set("World", World);
 
                 vert.Dispose();
@@ -94,6 +97,7 @@ namespace Messier.Testing.TG_A
                 //eObj = FullScreenQuadFactory.Create();
                 eObj = CubeFactory.Create();
                 eObj.SetTexture(0, t2);
+                eObj.SetTexture(1, t3);
             };
 
             GraphicsDevice.Update += (e) =>
@@ -115,7 +119,7 @@ namespace Messier.Testing.TG_A
                 prog.Set("Fcoef", (float)(2.0f / Math.Log(1001)/Math.Log(2)));
 
                 timer += 0.01f;
-                World = Matrix4.RotateY(timer);
+                //World = Matrix4.RotateY(timer);
                 prog.Set("World", World);
 
                 prog.Set("timer", timer);
@@ -125,6 +129,8 @@ namespace Messier.Testing.TG_A
             {
                 //GraphicsDevice.SetFramebuffer(fbuf);
                 GraphicsDevice.Clear();
+
+                Console.WriteLine(PUG.RNG.NextInt());
 
                 eObj.Bind();
                 GraphicsDevice.SetShaderProgram(prog);

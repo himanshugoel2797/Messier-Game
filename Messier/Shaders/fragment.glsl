@@ -71,5 +71,6 @@ void main()
 	float roughness = 1.0f;
 
 	Color = texture2D(img, texCoordPS_in) * vec4(cook_torrance(lightPos, normal, eyePos, ior, roughness), 1);
+	Color.a = 1;
 	gl_FragDepth = log2(flogz) * Fcoef * 0.5;
 }
