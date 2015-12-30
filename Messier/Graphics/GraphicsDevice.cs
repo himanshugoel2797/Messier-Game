@@ -207,6 +207,11 @@ namespace Messier.Graphics
             textures[slot] = tex;
         }
 
+        public static void SetTransformBuffer(int slot, GPUBuffer buf)
+        {
+
+        }
+
         public static void Draw(PrimitiveType type, int first, int count)
         {
             if (curVarray == null) return;

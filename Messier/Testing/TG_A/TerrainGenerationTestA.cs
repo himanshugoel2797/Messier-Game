@@ -31,6 +31,13 @@ namespace Messier.Testing.TG_A
             b2 = new BitmapTextureSource("test.jpg", 0);
             b3 = new BitmapTextureSource("heightmap.png", 0);
 
+            CubeMapTextureSource tFace = new CubeMapTextureSource(CubeMapTextureSource.CubeMapFace.PositiveY, b3),
+                bFace = new CubeMapTextureSource(CubeMapTextureSource.CubeMapFace.PositiveX, b3),
+                lFace = new CubeMapTextureSource(CubeMapTextureSource.CubeMapFace.PositiveZ, b3),
+                rFace = new CubeMapTextureSource(CubeMapTextureSource.CubeMapFace.NegativeX, b3),
+                fFace = new CubeMapTextureSource(CubeMapTextureSource.CubeMapFace.NegativeY, b3),
+                hFace = new CubeMapTextureSource(CubeMapTextureSource.CubeMapFace.NegativeZ, b3);
+
             Texture fbufTex = null, t3 = null;
             FramebufferTextureSource fbufTexSrc = new FramebufferTextureSource(1920, 1080, 0);
             Framebuffer fbuf = null;
@@ -63,7 +70,7 @@ namespace Messier.Testing.TG_A
 
 
                 ShaderSource vert = ShaderSource.Load(ShaderType.VertexShader, "Testing/TG_A/vertex.glsl");
-                ShaderSource frag = ShaderSource.Load(ShaderType.FragmentShader, "Shaders/fragment.glsl");
+                ShaderSource frag = ShaderSource.Load(ShaderType.FragmentShader, "Testing/TG_A/fragment.glsl");
                 ShaderSource tctrl = ShaderSource.Load(ShaderType.TessControlShader, "Testing/TG_A/tesscontrol.glsl");
                 ShaderSource teval = ShaderSource.Load(ShaderType.TessEvaluationShader, "Testing/TG_A/tessdomain.glsl");
 
@@ -73,19 +80,24 @@ namespace Messier.Testing.TG_A
                 fbuf[FramebufferAttachment.ColorAttachment0] = fbufTex;
 
                 t3 = new Texture();
-                t3.SetData(b3);
+                t3.SetData(tFace);
+                t3.SetData(bFace);
+                t3.SetData(lFace);
+                t3.SetData(rFace);
+                t3.SetData(fFace);
+                t3.SetData(hFace);
 
                 tex = new Texture();
                 tex.SetData(bmpTex);
                 tex.SetAnisotropicFilter(Texture.MaxAnisotropy);
 
                 t2 = new Texture();
-                t2.SetData(b2);
+                t2.SetData(b3);
                 t2.SetAnisotropicFilter(Texture.MaxAnisotropy);
 
 
                 prog = new ShaderProgram(vert, tctrl, teval, frag);
-                prog.Set("img", 1);
+                prog.Set("img", 0);
                 prog.Set("heightmap", 1);
                 prog.Set("World", World);
 
@@ -116,10 +128,11 @@ namespace Messier.Testing.TG_A
                 prog.Set("Proj", context.Projection);
                 prog.Set("eyePos", context.Camera.Position);
 
-                prog.Set("Fcoef", (float)(2.0f / Math.Log(1001)/Math.Log(2)));
+                prog.Set("Fcoef", (float)(2.0f / Math.Log(1000001)/Math.Log(2)));
 
                 timer += 0.01f;
                 //World = Matrix4.RotateY(timer);
+                World = Matrix4.CreateScale(100);
                 prog.Set("World", World);
 
                 prog.Set("timer", timer);
@@ -129,8 +142,6 @@ namespace Messier.Testing.TG_A
             {
                 //GraphicsDevice.SetFramebuffer(fbuf);
                 GraphicsDevice.Clear();
-
-                Console.WriteLine(PUG.RNG.NextInt());
 
                 eObj.Bind();
                 GraphicsDevice.SetShaderProgram(prog);

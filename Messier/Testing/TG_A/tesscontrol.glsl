@@ -17,7 +17,7 @@ float GetTessLevel(float Distance0, float Distance1)
     float AvgDistance = (Distance0 + Distance1) / 2.0;
 
 	return 1000;
-	//return max(4, 200 - (AvgDistance * 20));
+	return max(4, 200 - (AvgDistance * 20));
 
     if (AvgDistance <= 2.0) {
         return 40.0;

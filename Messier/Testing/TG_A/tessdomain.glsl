@@ -7,7 +7,7 @@ uniform mat4 View;
 uniform mat4 Proj;
 uniform float Fcoef;
 
-uniform sampler2D heightmap;
+uniform samplerCube heightmap;
 
 in vec3 worldES_in[];
 in vec2 texCoordES_in[];
@@ -37,7 +37,7 @@ void main()
    	worldPS_in = interpolate3D(worldES_in[0], worldES_in[1], worldES_in[2]);
    	normalPS_in = normalize(worldPS_in);
 	
-	gl_Position = (Proj * View * World) * vec4(normalize(worldPS_in) + texture(heightmap, texCoordPS_in).r * 0.15f * normalPS_in, 1);
+	gl_Position = (Proj * View * World) * vec4(normalize(worldPS_in) + texture(heightmap, normalPS_in).r * 0.15f * normalPS_in, 1);
 	gl_Position.z = log2(max(1e-6, 1.0 + gl_Position.w)) * Fcoef - 1.0; 	
 
 	flogz = 1.0 + gl_Position.w;

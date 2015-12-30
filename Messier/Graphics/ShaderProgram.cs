@@ -20,6 +20,7 @@ namespace Messier.Graphics
             {
                 GL.AttachShader(id, shaders[i].id);
             }
+
             GL.LinkProgram(id);
 
             int status = 0;
@@ -42,6 +43,12 @@ namespace Messier.Graphics
             }
 
             GraphicsDevice.Cleanup += Dispose;
+        }
+
+        public void SetVaryings(params string[] varyings)
+        {
+            GL.TransformFeedbackVaryings(id, varyings.Length, varyings, TransformFeedbackMode.SeparateAttribs);
+            GL.LinkProgram(id);
         }
 
         public void Set(string name, Vector3 vec)
@@ -97,7 +104,7 @@ namespace Messier.Graphics
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
                 // TODO: set large fields to null.
-                if(id != 0)GL.DeleteProgram(id);
+                if (id != 0) GL.DeleteProgram(id);
                 id = 0;
 
                 disposedValue = true;
