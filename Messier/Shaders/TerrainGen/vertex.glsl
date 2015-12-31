@@ -2,19 +2,18 @@
 
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec2 UV;
-layout(location = 2) in vec3 norm;
+layout(location = 2) in vec3 normal;
 
 uniform mat4 World;
 uniform mat4 View;
 uniform mat4 Proj;
 
-out vec2 texCoordCS_in;
-out vec3 worldCS_in;
-out vec3 normalCS_in;
+out vec2 texCoordPS_in;
+out vec3 normalPS_in;
 
 void main()
 {
-	worldCS_in = position;
-	normalCS_in = norm;
-	texCoordCS_in = UV;
+	gl_Position = vec4(position, 1);
+	normalPS_in = normal;
+	texCoordPS_in = UV;
 }

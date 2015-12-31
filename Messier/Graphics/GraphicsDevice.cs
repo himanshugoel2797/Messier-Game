@@ -19,7 +19,21 @@ namespace Messier.Graphics
         static GPUBuffer curIndices;
         static GameWindow game;
         static List<Texture> textures;
+        static List<Tuple<GPUBuffer, int, int>> feedbackBufs;
+        static PrimitiveType feedbackPrimitive;
 
+        public static Size WindowSize
+        {
+            get
+            {
+                return new Size(game.Width, game.Height);
+            }
+            set
+            {
+                game.Width = value.Width;
+                game.Height = value.Height;
+            }
+        }
         public static string Name {
             get
             {
@@ -138,6 +152,7 @@ namespace Messier.Graphics
             curProg = null;
             curFramebuffer = Framebuffer.Default;
             textures = new List<Texture>();
+            feedbackBufs = new List<Tuple<GPUBuffer, int, int>>();
         }
 
         public static void Run(double ups, double fps)
@@ -178,6 +193,11 @@ namespace Messier.Graphics
             InputLL.SetWinXY(game.Location.X, game.Location.Y, game.ClientSize.Width, game.ClientSize.Height);
         }
 
+        public static void SetViewport(int x, int y, int width, int height)
+        {
+            GL.Viewport(x, y, width, height);
+        }
+
         public static void SetShaderProgram(ShaderProgram prog)
         {
             curProg = prog;
@@ -207,9 +227,24 @@ namespace Messier.Graphics
             textures[slot] = tex;
         }
 
-        public static void SetTransformBuffer(int slot, GPUBuffer buf)
+        public static void SetFeedbackBuffer(int slot, GPUBuffer buf)
         {
+            SetFeedbackBuffer(slot, buf, 0, buf.size);
+        }
 
+        public static void SetFeedbackBuffer(int slot, GPUBuffer buf, int offset, int size)
+        {
+            while (feedbackBufs.Count <= slot)
+                feedbackBufs.Add(null);
+
+            feedbackBufs[slot] = new Tuple<GPUBuffer, int, int>(buf, offset, size);
+        }
+
+
+        public static void SetFeedbackPrimitive(PrimitiveType type)
+        {
+            if (feedbackPrimitive == PrimitiveType.Points || feedbackPrimitive == PrimitiveType.Lines || feedbackPrimitive == PrimitiveType.Triangles) feedbackPrimitive = type;
+            else throw new Exception();
         }
 
         public static void Draw(PrimitiveType type, int first, int count)
@@ -219,9 +254,12 @@ namespace Messier.Graphics
             if (curFramebuffer == null) return;
 
             for (int i = 0; i < textures.Count; i++) GPUStateMachine.BindTexture(i, textures[i].texTarget, textures[i].id);
+            for (int i = 0; i < feedbackBufs.Count; i++) GPUStateMachine.BindFeedbackBuffer(BufferTarget.TransformFeedbackBuffer, feedbackBufs[i].Item1.id, i, (IntPtr)feedbackBufs[i].Item2, (IntPtr)feedbackBufs[i].Item3);
+
+            
 
             GPUStateMachine.BindFramebuffer(curFramebuffer.id);
-
+            if(feedbackBufs.Count > 0)GL.BeginTransformFeedback((TransformFeedbackPrimitiveType)feedbackPrimitive);
 
             GL.UseProgram(curProg.id);
             GPUStateMachine.BindVertexArray(curVarray.id);
@@ -233,14 +271,18 @@ namespace Messier.Graphics
             if(curIndices != null)GPUStateMachine.UnbindBuffer(BufferTarget.ElementArrayBuffer);
             GPUStateMachine.UnbindVertexArray();
             GL.UseProgram(0);
+
+            if (feedbackBufs.Count > 0) GL.EndTransformFeedback();
             GPUStateMachine.UnbindFramebuffer();
 
+            for (int i = 0; i < feedbackBufs.Count; i++) GPUStateMachine.UnbindFeedbackBuffer(BufferTarget.TransformFeedbackBuffer, i);
             for (int i = 0; i < textures.Count; i++) GPUStateMachine.UnbindTexture(i, textures[i].texTarget);
 
             curVarray = null;
             curProg = null;
             curIndices = null;
             textures.Clear();
+            feedbackBufs.Clear();
             curFramebuffer = Framebuffer.Default;
         }
 
@@ -262,8 +304,10 @@ namespace Messier.Graphics
             GL.GetTexImage(t.texTarget, 0, PixelFormat.Bgra, PixelType.UnsignedInt8888Reversed, bmpData.Scan0);
             GPUStateMachine.UnbindTexture(0, t.texTarget);
             bmp.UnlockBits(bmpData);
+        
             bmp.RotateFlip(RotateFlipType.Rotate180FlipX);
             bmp.Save(file);
+            bmp.Dispose();
 #endif
         }
 

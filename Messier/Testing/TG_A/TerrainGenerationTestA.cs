@@ -18,7 +18,7 @@ namespace Messier.Testing.TG_A
     {
         public static void Run()
         {
-            ShaderProgram prog = null;
+            ShaderProgram prog = null, terrProg = null;
             Texture tex = null, t2 = null;
 
             GraphicsContext context = new GraphicsContext()
@@ -29,7 +29,16 @@ namespace Messier.Testing.TG_A
             BitmapTextureSource bmpTex, b2, b3;
             bmpTex = TextDrawer.CreateWriter("Times New Roman", FontStyle.Regular).Write("Hello!", 200, System.Drawing.Color.White);
             b2 = new BitmapTextureSource("test.jpg", 0);
-            b3 = new BitmapTextureSource("heightmap.png", 0);
+            b3 = new BitmapTextureSource("test.png", 0);
+
+
+            Texture fbufTex = null, t3 = null;
+            FramebufferTextureSource fbufTexSrc = new FramebufferTextureSource(1024, 1024, 0);
+            Framebuffer fbuf = null;
+
+            Matrix4 World = Matrix4.Identity;
+            EngineObject eObj = null, fsq = null;
+            float timer = 0;
 
             CubeMapTextureSource tFace = new CubeMapTextureSource(CubeMapTextureSource.CubeMapFace.PositiveY, b3),
                 bFace = new CubeMapTextureSource(CubeMapTextureSource.CubeMapFace.PositiveX, b3),
@@ -37,15 +46,6 @@ namespace Messier.Testing.TG_A
                 rFace = new CubeMapTextureSource(CubeMapTextureSource.CubeMapFace.NegativeX, b3),
                 fFace = new CubeMapTextureSource(CubeMapTextureSource.CubeMapFace.NegativeY, b3),
                 hFace = new CubeMapTextureSource(CubeMapTextureSource.CubeMapFace.NegativeZ, b3);
-
-            Texture fbufTex = null, t3 = null;
-            FramebufferTextureSource fbufTexSrc = new FramebufferTextureSource(1920, 1080, 0);
-            Framebuffer fbuf = null;
-
-            Matrix4 World = Matrix4.Identity;
-            EngineObject eObj = null;
-            float timer = 0;
-
 
             GraphicsDevice.Load += () =>
             {
@@ -74,10 +74,17 @@ namespace Messier.Testing.TG_A
                 ShaderSource tctrl = ShaderSource.Load(ShaderType.TessControlShader, "Testing/TG_A/tesscontrol.glsl");
                 ShaderSource teval = ShaderSource.Load(ShaderType.TessEvaluationShader, "Testing/TG_A/tessdomain.glsl");
 
-                fbuf = new Framebuffer(1920, 1080);
+                ShaderSource vA = ShaderSource.Load(ShaderType.VertexShader, "Shaders/TerrainGen/vertex.glsl");
+                ShaderSource fA = ShaderSource.Load(ShaderType.FragmentShader, "Shaders/TerrainGen/fragment.glsl");
+                terrProg = new ShaderProgram(vA, fA);
+                terrProg.Set("World", Matrix4.Identity);
+
+                fbuf = new Framebuffer(1024, 1024);
                 fbufTex = new Texture();
                 fbufTex.SetData(fbufTexSrc);
                 fbuf[FramebufferAttachment.ColorAttachment0] = fbufTex;
+
+                fsq = FullScreenQuadFactory.Create();
 
                 t3 = new Texture();
                 t3.SetData(tFace);
@@ -86,6 +93,7 @@ namespace Messier.Testing.TG_A
                 t3.SetData(rFace);
                 t3.SetData(fFace);
                 t3.SetData(hFace);
+                t3.SetEnableLinearFilter(true);
 
                 tex = new Texture();
                 tex.SetData(bmpTex);
@@ -110,6 +118,8 @@ namespace Messier.Testing.TG_A
                 eObj = CubeFactory.Create();
                 eObj.SetTexture(0, t2);
                 eObj.SetTexture(1, t3);
+
+                b3.Dispose();
             };
 
             GraphicsDevice.Update += (e) =>
@@ -130,26 +140,39 @@ namespace Messier.Testing.TG_A
 
                 prog.Set("Fcoef", (float)(2.0f / Math.Log(1000001)/Math.Log(2)));
 
-                timer += 0.01f;
+                //timer += 0.001f;
                 //World = Matrix4.RotateY(timer);
-                World = Matrix4.CreateScale(100);
+                World = Matrix4.CreateScale(10);
                 prog.Set("World", World);
 
                 prog.Set("timer", timer);
+                terrProg.Set("timer", timer);
             };
+
+            bool te1 = false;
 
             GraphicsDevice.Render += (e) =>
             {
-                //GraphicsDevice.SetFramebuffer(fbuf);
+                GraphicsDevice.SetFramebuffer(fbuf);
                 GraphicsDevice.Clear();
+                
+                fsq.Bind();
+                GraphicsDevice.SetShaderProgram(terrProg);
+                GraphicsDevice.SetViewport(0, 0, 1024, 1024);
+                GraphicsDevice.Draw(PrimitiveType.Triangles, 0, fsq.IndexCount);
 
                 eObj.Bind();
                 GraphicsDevice.SetShaderProgram(prog);
+                GraphicsDevice.SetViewport(0, 0, GraphicsDevice.WindowSize.Width, GraphicsDevice.WindowSize.Height);
                 GraphicsDevice.PatchCount = 3;
                 GraphicsDevice.Draw(PrimitiveType.Patches, 0, eObj.IndexCount);
 
                 GraphicsDevice.SwapBuffers();
-                //GraphicsDevice.SaveTexture(fbufTex, "test.png");
+                if (!te1)
+                {
+                    te1 = true;
+                    GraphicsDevice.SaveTexture(fbufTex, "test1.png");
+                }
             };
 
             GraphicsDevice.Name = "The Julis Faction";

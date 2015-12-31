@@ -37,9 +37,7 @@ void main()
    	worldPS_in = interpolate3D(worldES_in[0], worldES_in[1], worldES_in[2]);
    	normalPS_in = normalize(worldPS_in);
 	
-	vec4 hP = texture(heightmap, normalPS_in);
-
-	gl_Position = (Proj * View * World) * vec4(normalize(worldPS_in) + hP.g * 0.05f * normalPS_in - hP.r * 0.3f * normalPS_in, 1);
+	gl_Position = (Proj * View * World) * vec4(normalize(worldPS_in) + texture(heightmap, normalPS_in).r * 0.15f * normalPS_in, 1);
 	gl_Position.z = log2(max(1e-6, 1.0 + gl_Position.w)) * Fcoef - 1.0; 	
 
 	flogz = 1.0 + gl_Position.w;

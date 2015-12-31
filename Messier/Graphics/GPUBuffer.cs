@@ -12,7 +12,8 @@ namespace Messier.Graphics
     {
         internal int id;
         internal BufferTarget target;
-        
+        internal int size;
+
         public GPUBuffer(BufferTarget target)
         {
             id = GL.GenBuffer();
@@ -24,7 +25,8 @@ namespace Messier.Graphics
         {
             GPUStateMachine.BindBuffer(target, id);
 
-            GL.BufferData(target, (IntPtr)(Marshal.SizeOf(data[0]) * data.Length), data, hint);
+            size = (Marshal.SizeOf(data[0]) * data.Length);
+            GL.BufferData(target, (IntPtr)size, data, hint);
 
             GPUStateMachine.UnbindBuffer(target);
         }
