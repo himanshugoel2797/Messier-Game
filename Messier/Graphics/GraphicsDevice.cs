@@ -57,11 +57,18 @@ namespace Messier.Graphics
                 GL.PatchParameter(PatchParameterInt.PatchVertices, value);
             }
         }
+
+        static bool wframe = false;
         public static bool Wireframe
         {
             set
             {
+                wframe = value;
                 GL.PolygonMode(MaterialFace.FrontAndBack, value?PolygonMode.Line:PolygonMode.Fill);
+            }
+            get
+            {
+                return wframe;
             }
         }
 

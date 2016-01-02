@@ -14,7 +14,7 @@ out vec3 normalCS_in;
 
 void main()
 {
-	worldCS_in = position;
+	worldCS_in = (World * vec4(position, 1)).xyz;
 	normalCS_in = norm;
 	texCoordCS_in = UV;
 }

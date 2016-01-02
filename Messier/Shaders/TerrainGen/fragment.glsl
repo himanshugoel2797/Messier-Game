@@ -3,7 +3,7 @@
 layout(location = 0) out vec4 Color;
 
 in vec2 texCoordPS_in;
-in vec3 normalPS_in;
+in vec3 normalPSi_in;
 
 uniform float timer;
 
@@ -105,9 +105,20 @@ float snoiseFractal2(vec3 m) {
 
 void main()
 {
-	Color.r = snoiseFractal2(vec3(texCoordPS_in, timer) * 2.0 + 10.0);// * step(0.85, snoiseFractal(vec3(texCoordPS_in, timer) * 4.0 + 43.0));
-	Color.g = snoise(vec3(texCoordPS_in, timer) * 8.0 + 80.0) * (1.0 - snoiseFractal(vec3(texCoordPS_in, timer) * 8.0 + 8.0)) * step(0.85, snoiseFractal(vec3(texCoordPS_in, timer) * 4.0 + 3.0));
-	Color.b = snoiseFractal2(vec3(texCoordPS_in, timer) * 2.0 + 0.0);
+	//Color.r = snoiseFractal2(vec3(texCoordPS_in, timer) * 2.0 + 10.0);// * step(0.85, snoiseFractal(vec3(texCoordPS_in, timer) * 4.0 + 43.0));
+	//Color.g = snoise2(vec3(texCoordPS_in, timer) * 16.0 + 800.0) * step(0.85, snoiseFractal(vec3(texCoordPS_in, timer) * 4.0 + 3.0)) + snoise(vec3(texCoordPS_in, timer) * 8.0 + 80.0) * (1.0 - snoiseFractal(vec3(texCoordPS_in, timer) * 8.0 + 8.0)) * step(0.85, snoiseFractal(vec3(texCoordPS_in, timer) * 4.0 + 3.0));
+	//Color.b = snoiseFractal2(vec3(texCoordPS_in, timer) * 2.0 + 0.0);
+
+	vec3 normalPS_in = vec3(texCoordPS_in, timer);
+
+	Color.r = snoiseFractal2(normalPS_in * 2.0 + 10.0);// * step(0.85, snoiseFractal(vec3(texCoordPS_in, timer) * 4.0 + 43.0));
+	Color.g = snoise(normalPS_in * 4.0 + 3.0);
+	Color.g = Color.g * Color.g * Color.g;
+	Color.g *= 1 - snoiseFractal(normalPS_in * 4.0);
+	
+	Color.b = 0;
+	
+	Color.a = 1;
 	
 	Color.a = 1;
 }

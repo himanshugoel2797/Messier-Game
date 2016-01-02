@@ -33,7 +33,7 @@ namespace Messier.Testing.TG_A
 
 
             Texture fbufTex = null, t3 = null;
-            FramebufferTextureSource fbufTexSrc = new FramebufferTextureSource(1024, 1024, 0);
+            FramebufferTextureSource fbufTexSrc = new FramebufferTextureSource(256, 256, 0);
             Framebuffer fbuf = null;
 
             Matrix4 World = Matrix4.Identity;
@@ -50,10 +50,10 @@ namespace Messier.Testing.TG_A
             GraphicsDevice.Load += () =>
             {
                 // setup settings, load textures, sounds
-                //GraphicsDevice.Wireframe = true;
+                GraphicsDevice.Wireframe = false;
                 GraphicsDevice.AlphaEnabled = true;
                 GraphicsDevice.DepthTestEnabled = true;
-                GraphicsDevice.CullEnabled = true;
+                GraphicsDevice.CullEnabled = false;
                 GraphicsDevice.CullMode = CullFaceMode.Back;
 
                 eObj = new EngineObject();
@@ -79,7 +79,7 @@ namespace Messier.Testing.TG_A
                 terrProg = new ShaderProgram(vA, fA);
                 terrProg.Set("World", Matrix4.Identity);
 
-                fbuf = new Framebuffer(1024, 1024);
+                fbuf = new Framebuffer(256, 256);
                 fbufTex = new Texture();
                 fbufTex.SetData(fbufTexSrc);
                 fbuf[FramebufferAttachment.ColorAttachment0] = fbufTex;
@@ -94,6 +94,7 @@ namespace Messier.Testing.TG_A
                 t3.SetData(fFace);
                 t3.SetData(hFace);
                 t3.SetEnableLinearFilter(true);
+                t3.SetAnisotropicFilter(Texture.MaxAnisotropy);
 
                 tex = new Texture();
                 tex.SetData(bmpTex);
@@ -121,7 +122,7 @@ namespace Messier.Testing.TG_A
 
                 b3.Dispose();
             };
-
+            bool eyePosStill = false;
             GraphicsDevice.Update += (e) =>
             {
                 // add game logic, input handling
@@ -130,13 +131,25 @@ namespace Messier.Testing.TG_A
                     GraphicsDevice.Exit();
                 }
 
+                if(GraphicsDevice.Keyboard[Key.Z])
+                {
+                    GraphicsDevice.Wireframe = !GraphicsDevice.Wireframe;
+                    //GraphicsDevice.CullEnabled = !GraphicsDevice.Wireframe;
+                }
+
+                if(GraphicsDevice.Keyboard[Key.F])
+                {
+                    eyePosStill = !eyePosStill;
+                    Console.WriteLine("EyePosStill = " + eyePosStill);
+                }
+
                 context.Update(e);
                 //context.Projection = Matrix4.Identity;
                 //context.View = Matrix4.Identity;
 
                 prog.Set("View", context.View);
                 prog.Set("Proj", context.Projection);
-                prog.Set("eyePos", context.Camera.Position);
+                if(!eyePosStill)prog.Set("eyePos", context.Camera.Position);
 
                 prog.Set("Fcoef", (float)(2.0f / Math.Log(1000001)/Math.Log(2)));
 
@@ -158,13 +171,13 @@ namespace Messier.Testing.TG_A
                 
                 fsq.Bind();
                 GraphicsDevice.SetShaderProgram(terrProg);
-                GraphicsDevice.SetViewport(0, 0, 1024, 1024);
+                GraphicsDevice.SetViewport(0, 0, 256, 256);
                 GraphicsDevice.Draw(PrimitiveType.Triangles, 0, fsq.IndexCount);
 
                 eObj.Bind();
                 GraphicsDevice.SetShaderProgram(prog);
                 GraphicsDevice.SetViewport(0, 0, GraphicsDevice.WindowSize.Width, GraphicsDevice.WindowSize.Height);
-                GraphicsDevice.PatchCount = 3;
+                GraphicsDevice.PatchCount = 4;
                 GraphicsDevice.Draw(PrimitiveType.Patches, 0, eObj.IndexCount);
 
                 GraphicsDevice.SwapBuffers();
