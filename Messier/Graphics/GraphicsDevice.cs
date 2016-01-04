@@ -34,14 +34,16 @@ namespace Messier.Graphics
                 game.Height = value.Height;
             }
         }
+
+        static string gameName;
         public static string Name {
             get
             {
-                return game.Title;
+                return gameName;
             }
             set
             {
-                game.Title = value;
+                gameName = value;
             }
         }
         public static Action Load { get; set; }
@@ -150,6 +152,7 @@ namespace Messier.Graphics
         static GraphicsDevice()
         {
             game = new GameWindow((int)(16f/9f * 540), 540);
+            game.VSync = VSyncMode.Off;
             game.Resize += Window_Resize;
             game.Load += Game_Load;
             game.RenderFrame += Game_RenderFrame;
@@ -164,11 +167,15 @@ namespace Messier.Graphics
 
         public static void Run(double ups, double fps)
         {
+            game.Title = gameName;
             game.Run(ups, fps);
         }
 
         public static void SwapBuffers()
         {
+#if DEBUG
+            game.Title = gameName + $"FPS : {game.RenderFrequency}, UPS : {game.UpdateFrequency}";
+#endif
             game.SwapBuffers();
         }
 
@@ -207,22 +214,27 @@ namespace Messier.Graphics
 
         public static void SetShaderProgram(ShaderProgram prog)
         {
+            if (curProg != null && prog.id != curProg.id) GL.UseProgram(0);
             curProg = prog;
         }
 
         public static void SetVertexArray(VertexArray varray)
         {
+            if (curVarray != null && varray.id != curVarray.id) GPUStateMachine.UnbindVertexArray();
             curVarray = varray;
         }
 
         public static void SetIndexBuffer(GPUBuffer indices)
         {
             if (indices.target != BufferTarget.ElementArrayBuffer) throw new ArgumentException("Argument must be an index buffer!");
+
+            if (curIndices != null && indices.id != curIndices.id) GPUStateMachine.UnbindBuffer(BufferTarget.ElementArrayBuffer);
             curIndices = indices;
         }
 
         public static void SetFramebuffer(Framebuffer framebuf)
         {
+            if (curFramebuffer != null && curFramebuffer.id != framebuf.id) GPUStateMachine.UnbindFramebuffer();
             curFramebuffer = framebuf;
         }
 
@@ -275,22 +287,14 @@ namespace Messier.Graphics
             if (curIndices != null) GL.DrawElements(type, count, DrawElementsType.UnsignedInt, IntPtr.Zero);
             else GL.DrawArrays(type, first, count);
 
-            if(curIndices != null)GPUStateMachine.UnbindBuffer(BufferTarget.ElementArrayBuffer);
-            GPUStateMachine.UnbindVertexArray();
-            GL.UseProgram(0);
-
             if (feedbackBufs.Count > 0) GL.EndTransformFeedback();
-            GPUStateMachine.UnbindFramebuffer();
 
             for (int i = 0; i < feedbackBufs.Count; i++) GPUStateMachine.UnbindFeedbackBuffer(BufferTarget.TransformFeedbackBuffer, i);
             for (int i = 0; i < textures.Count; i++) GPUStateMachine.UnbindTexture(i, textures[i].texTarget);
-
-            curVarray = null;
-            curProg = null;
-            curIndices = null;
+            
             textures.Clear();
             feedbackBufs.Clear();
-            curFramebuffer = Framebuffer.Default;
+
         }
 
         public static void Clear()

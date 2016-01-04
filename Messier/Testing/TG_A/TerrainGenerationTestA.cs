@@ -177,7 +177,7 @@ namespace Messier.Testing.TG_A
                 eObj.Bind();
                 GraphicsDevice.SetShaderProgram(prog);
                 GraphicsDevice.SetViewport(0, 0, GraphicsDevice.WindowSize.Width, GraphicsDevice.WindowSize.Height);
-                GraphicsDevice.PatchCount = 4;
+                GraphicsDevice.PatchCount = 3;
                 GraphicsDevice.Draw(PrimitiveType.Patches, 0, eObj.IndexCount);
 
                 GraphicsDevice.SwapBuffers();

@@ -1,6 +1,6 @@
 ﻿#version 410 core
 
-layout (vertices = 4) out;
+layout (vertices = 3) out;
 
 uniform vec3 eyePos;
 uniform mat4 World;
@@ -62,6 +62,4 @@ void main()
 	gl_TessLevelOuter[0] = gl_TessLevelInner[0];
 	gl_TessLevelOuter[1] = gl_TessLevelInner[0];
 	gl_TessLevelOuter[2] = gl_TessLevelInner[0];
-	gl_TessLevelOuter[3] = gl_TessLevelInner[0];
-	gl_TessLevelInner[1] = gl_TessLevelInner[0];
 }

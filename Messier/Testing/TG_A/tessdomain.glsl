@@ -1,6 +1,6 @@
 ﻿#version 410 core
 
-layout(quads, ccw) in;
+layout(triangles, equal_spacing, ccw) in;
 
 uniform mat4 World;
 uniform mat4 View;
@@ -103,26 +103,22 @@ float snoiseFractal2(vec3 m) {
 
 
 
-vec2 interpolate2D(vec2 v0, vec2 v1, vec2 v2, vec2 v3)
+vec2 interpolate2D(vec2 v0, vec2 v1, vec2 v2)
 {
-	vec2 p0 = mix(v0, v3, gl_TessCoord.y);
-	vec2 p1 = mix(v1, v2, gl_TessCoord.y);
-	return normalize(mix(p0, p1, gl_TessCoord.x));
+   	return vec2(gl_TessCoord.x) * v0 + vec2(gl_TessCoord.y) * v1 + vec2(gl_TessCoord.z) * v2;
 }
 
-vec3 interpolate3D(vec3 v0, vec3 v1, vec3 v2, vec3 v3)
+vec3 interpolate3D(vec3 v0, vec3 v1, vec3 v2)
 {
-	vec3 p0 = mix(v0, v3, gl_TessCoord.y);
-	vec3 p1 = mix(v1, v2, gl_TessCoord.y);
-	return normalize(mix(p0, p1, gl_TessCoord.x));
+   	return vec3(gl_TessCoord.x) * v0 + vec3(gl_TessCoord.y) * v1 + vec3(gl_TessCoord.z) * v2;
 }
 
 void main()
 {
 	// Interpolate the attributes of the output vertex using the barycentric coordinates
-   	texCoordPS_in = interpolate2D(texCoordES_in[0], texCoordES_in[1], texCoordES_in[2], texCoordES_in[3]);
-   	normalPS_in = interpolate3D(normalES_in[0], normalES_in[1], normalES_in[2], normalES_in[3]);
-   	worldPS_in = interpolate3D(worldES_in[0], worldES_in[1], worldES_in[2], worldES_in[3]);
+   	texCoordPS_in = interpolate2D(texCoordES_in[0], texCoordES_in[1], texCoordES_in[2]);
+   	normalPS_in = interpolate3D(normalES_in[0], normalES_in[1], normalES_in[2]);
+   	worldPS_in = interpolate3D(worldES_in[0], worldES_in[1], worldES_in[2]);
    	normalPS_in = normalize(worldPS_in);
 	
 	vec4 hP = texture(heightmap, normalPS_in);	
@@ -130,14 +126,14 @@ void main()
 	hP.g = snoise(normalPS_in * 4.0 + 3.0);
 	hP.g = hP.g * hP.g * hP.g;
 	hP.g *= 1 - snoiseFractal(normalPS_in * 4.0);
-	hP.g += snoiseFractal2(normalPS_in * 5000) * 0.05;
+	hP.g += snoiseFractal2(normalPS_in * 5000) * 0.1;
 
 	hP.b = 0;
 	
 	hP.a = 1;
 
-	gl_Position = (Proj * View * World) * vec4(worldPS_in, 1);
-	//gl_Position = (Proj * View * World) * vec4(normalize(worldPS_in) + (hP.g - hP.r) * 0.1f * normalPS_in, 1);
+	//gl_Position = (Proj * View * World) * vec4(worldPS_in, 1);
+	gl_Position = (Proj * View * World) * vec4(normalize(worldPS_in) + (hP.g - hP.r) * 0.1f * normalPS_in, 1);
 	gl_Position.z = log2(max(1e-6, 1.0 + gl_Position.w)) * Fcoef - 1.0; 	
 
 	flogz = 1.0 + gl_Position.w;

@@ -62,7 +62,9 @@
     <Compile Include="Engine\BoundingBox.cs" />
     <Compile Include="Engine\SceneGraph\EngineObject.cs" />
     <Compile Include="Engine\SceneGraph\ObjectBatch.cs" />
+    <Compile Include="Engine\SVO.cs" />
     <Compile Include="Engine\TextWriter.cs" />
+    <Compile Include="Engine\VoxelTypeMap.cs" />
     <Compile Include="Graphics\BitmapTextureSource.cs" />
     <Compile Include="Graphics\Cameras\Camera.cs" />
     <Compile Include="Graphics\Cameras\FirstPersonCamera.cs" />
@@ -88,6 +90,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PUG\RNG.cs" />
     <Compile Include="Testing\TG_A\TerrainGenerationTestA.cs" />
+    <Compile Include="Testing\VoxTest\VoxelTest.cs" />
     <Compile Include="Voxel\Camera.cs" />
     <Compile Include="Voxel\IVoxelizer.cs" />
     <Compile Include="Voxel\VoxelChunk.cs" />
@@ -141,6 +144,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Testing\TG_A\vertex.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Testing\VoxTest\fragment.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Testing\VoxTest\vertex.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
