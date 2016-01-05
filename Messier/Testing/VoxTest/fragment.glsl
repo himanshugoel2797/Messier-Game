@@ -73,7 +73,7 @@ float snoiseFractal(vec3 m) {
 
 void main()
 {
-	Color.rgb = worldCS_in;
+	Color.rgb = worldCS_in/16;
 	Color.a = 1;
 	gl_FragDepth = log2(flogz) * Fcoef * 0.5;
 }

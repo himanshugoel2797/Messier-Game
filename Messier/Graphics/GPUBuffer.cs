@@ -13,6 +13,7 @@ namespace Messier.Graphics
         internal int id;
         internal BufferTarget target;
         internal int size;
+        public int dataLen;
 
         public GPUBuffer(BufferTarget target)
         {
@@ -23,8 +24,10 @@ namespace Messier.Graphics
 
         public void BufferData<T>(int offset, T[] data, BufferUsageHint hint) where T : struct
         {
+            if (data.Length < 1) throw new Exception("Buffer is empty!");
             GPUStateMachine.BindBuffer(target, id);
 
+            dataLen = data.Length;
             size = (Marshal.SizeOf(data[0]) * data.Length);
             GL.BufferData(target, (IntPtr)size, data, hint);
 

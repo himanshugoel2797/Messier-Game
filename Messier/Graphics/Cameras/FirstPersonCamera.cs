@@ -104,11 +104,11 @@ namespace Messier.Graphics.Cameras
 
             if (Keyboard.IsKeyPressed(Key.Home))
             {
-                moveSpeed += 0.05f;
+                moveSpeed += 500f;
             }
             else if (Keyboard.IsKeyPressed(Key.End))
             {
-                moveSpeed -= 0.05f;
+                moveSpeed -= 500f;
             }
 #endif
             //View = UpdateViewMatrix();

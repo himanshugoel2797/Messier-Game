@@ -10,6 +10,11 @@ using System.Threading.Tasks;
 
 namespace Messier.Graphics
 {
+    public enum FaceWinding
+    {
+        Clockwise = 2304,
+        CounterClockwise = 2305
+    }
 
     public class GraphicsDevice
     {
@@ -21,6 +26,20 @@ namespace Messier.Graphics
         static List<Texture> textures;
         static List<Tuple<GPUBuffer, int, int>> feedbackBufs;
         static PrimitiveType feedbackPrimitive;
+
+        static FaceWinding winding;
+        public static FaceWinding Winding
+        {
+            get
+            {
+                return winding;
+            }
+            set
+            {
+                winding = value;
+                GL.FrontFace((FrontFaceDirection)winding);
+            }
+        }
 
         public static Size WindowSize
         {
@@ -36,7 +55,8 @@ namespace Messier.Graphics
         }
 
         static string gameName;
-        public static string Name {
+        public static string Name
+        {
             get
             {
                 return gameName;
@@ -66,7 +86,7 @@ namespace Messier.Graphics
             set
             {
                 wframe = value;
-                GL.PolygonMode(MaterialFace.FrontAndBack, value?PolygonMode.Line:PolygonMode.Fill);
+                GL.PolygonMode(MaterialFace.FrontAndBack, value ? PolygonMode.Line : PolygonMode.Fill);
             }
             get
             {
@@ -84,7 +104,7 @@ namespace Messier.Graphics
             set
             {
                 aEnabled = value;
-                if(aEnabled)
+                if (aEnabled)
                 {
                     GL.Enable(EnableCap.Blend);
                     GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
@@ -137,7 +157,7 @@ namespace Messier.Graphics
             set
             {
                 depthTestEnabled = value;
-                if(depthTestEnabled)
+                if (depthTestEnabled)
                 {
                     GL.Enable(EnableCap.DepthTest);
                     GL.DepthFunc(DepthFunction.Lequal);
@@ -151,7 +171,7 @@ namespace Messier.Graphics
 
         static GraphicsDevice()
         {
-            game = new GameWindow((int)(16f/9f * 540), 540);
+            game = new GameWindow((int)(16f / 9f * 540), 540);
             game.VSync = VSyncMode.Off;
             game.Resize += Window_Resize;
             game.Load += Game_Load;
@@ -275,14 +295,14 @@ namespace Messier.Graphics
             for (int i = 0; i < textures.Count; i++) GPUStateMachine.BindTexture(i, textures[i].texTarget, textures[i].id);
             for (int i = 0; i < feedbackBufs.Count; i++) GPUStateMachine.BindFeedbackBuffer(BufferTarget.TransformFeedbackBuffer, feedbackBufs[i].Item1.id, i, (IntPtr)feedbackBufs[i].Item2, (IntPtr)feedbackBufs[i].Item3);
 
-            
+
 
             GPUStateMachine.BindFramebuffer(curFramebuffer.id);
-            if(feedbackBufs.Count > 0)GL.BeginTransformFeedback((TransformFeedbackPrimitiveType)feedbackPrimitive);
+            if (feedbackBufs.Count > 0) GL.BeginTransformFeedback((TransformFeedbackPrimitiveType)feedbackPrimitive);
 
             GL.UseProgram(curProg.id);
             GPUStateMachine.BindVertexArray(curVarray.id);
-            if(curIndices != null)GPUStateMachine.BindBuffer(BufferTarget.ElementArrayBuffer, curIndices.id);
+            if (curIndices != null) GPUStateMachine.BindBuffer(BufferTarget.ElementArrayBuffer, curIndices.id);
 
             if (curIndices != null) GL.DrawElements(type, count, DrawElementsType.UnsignedInt, IntPtr.Zero);
             else GL.DrawArrays(type, first, count);
@@ -291,7 +311,7 @@ namespace Messier.Graphics
 
             for (int i = 0; i < feedbackBufs.Count; i++) GPUStateMachine.UnbindFeedbackBuffer(BufferTarget.TransformFeedbackBuffer, i);
             for (int i = 0; i < textures.Count; i++) GPUStateMachine.UnbindTexture(i, textures[i].texTarget);
-            
+
             textures.Clear();
             feedbackBufs.Clear();
 
@@ -315,7 +335,7 @@ namespace Messier.Graphics
             GL.GetTexImage(t.texTarget, 0, PixelFormat.Bgra, PixelType.UnsignedInt8888Reversed, bmpData.Scan0);
             GPUStateMachine.UnbindTexture(0, t.texTarget);
             bmp.UnlockBits(bmpData);
-        
+
             bmp.RotateFlip(RotateFlipType.Rotate180FlipX);
             bmp.Save(file);
             bmp.Dispose();
