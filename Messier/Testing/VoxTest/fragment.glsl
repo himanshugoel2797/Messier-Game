@@ -5,11 +5,10 @@ layout(location = 0) out vec4 Color;
 
 flat in int material;
 in vec3 worldCS_in;
-in vec3 normalCS_in;
 
 in float flogz;
 uniform float Fcoef;
-
+uniform vec3 Normal;
 uniform float timer;
 
 //  <www.shadertoy.com/view/XsX3zB>
@@ -73,7 +72,7 @@ float snoiseFractal(vec3 m) {
 
 void main()
 {
-	Color.rgb = worldCS_in/16;
+	Color.rgb = Normal * 0.5 + 0.5;
 	Color.a = 1;
 	gl_FragDepth = log2(flogz) * Fcoef * 0.5;
 }

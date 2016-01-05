@@ -499,14 +499,14 @@ namespace Messier.Testing.VoxTest
                 Random rng = new Random();
                 double n = 128;
 
-                for(int x = 0; x < Chunk.Side; x++)
-                    for (int y = 0; y < Chunk.Side; y++)
-                        for (int z = 0; z < Chunk.Side; z++)
+                for (int x = 0; x < c.Side; x++)
+                    for (int y = 0; y < c.Side; y++)
+                        for (int z = 0; z < c.Side; z++)
                         {
                             //c[x, y, z] = 1;
                             //if (n++ == 1) c[x, y, z] = 1;
                             //c[x, y, z] = (byte)((x + y + z) % 2);
-                            c[x, y, z] = (byte)(s.Evaluate(x/n, y/n, z/n) >= 0.5?0:1);
+                            c[x, y, z] = (byte)(s.Evaluate(x / n, y / n, z / n) >= 0.5 ? 0 : 1);
                         }
 
                 c.GenerateMesh();
@@ -529,13 +529,16 @@ namespace Messier.Testing.VoxTest
                 prog.Set("Fcoef", (float)(2.0f / Math.Log(1000001) / Math.Log(2)));
             };
 
+
             GraphicsDevice.Render += (e) =>
             {
                 GraphicsDevice.Clear();
 
+                for(int j = 0; j < 100; j++)
                 for (int i = 0; i < 6; i++)
                 {
                     c.Bind(i);
+                    prog.Set("Normal", c.Normals[i]);
                     GraphicsDevice.SetShaderProgram(prog);
                     GraphicsDevice.Draw(OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, 0, c.vBuf[i].dataLen);
                 }

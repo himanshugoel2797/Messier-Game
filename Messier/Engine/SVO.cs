@@ -22,9 +22,26 @@ namespace Messier.Engine
 
     public class Chunk : IVoxelData
     {
-        public const int Side = 128;
-        public const int BitPerVoxel = 1;
-        public const int VoxelsPerInt = 32 / BitPerVoxel;
+        public int Side = 128;
+        public int BitPerVoxel = 1;
+        
+        public int VoxelsPerInt
+        {
+            get
+            {
+                return 32 / BitPerVoxel;
+            }
+        }
+
+        public Vector3[] Normals { get; } = new Vector3[]
+        {
+                new Vector3(-1, 0, 0),
+                new Vector3(0, -1, 0),
+                new Vector3(0, 0, -1),
+                new Vector3(1, 0, 0),
+                new Vector3(0, 1, 0),
+                new Vector3(0, 0, 1)
+        };
 
         public VoxelDataType datType { get; set; } = VoxelDataType.Chunk;
 
@@ -384,9 +401,6 @@ namespace Messier.Engine
                                         new Vector3(x[0], x[1], x[2])
                                 };
 
-                                Vector3 t0 = (v0[1] - v0[0]);
-                                Vector3 t1 = (v0[2] - v0[0]);
-
                                 Vector3 curVoxel = Vector3.Zero;
                                 curVoxel[u] = i;
                                 curVoxel[v] = j;
@@ -422,9 +436,6 @@ namespace Messier.Engine
                                     v0[4] = tmp0;
                                 }
 
-                                Matrix4 objTrans = new Matrix4(new Vector4(t0, 0), new Vector4(t1, 0), new Vector4(nNorm, 0), Vector4.Zero);
-                                Vector3 vect = Vector3.Transform(nNorm, objTrans);
-
                                 Vector4[] v1 = new Vector4[v0.Length];
                                 for (int q0 = 0; q0 < v1.Length; q0++)
                                 {
@@ -441,7 +452,7 @@ namespace Messier.Engine
                                 }
                                 else if (nNorm == Vector3.UnitZ)
                                 {
-                                    normalVerts[2].AddRange(v1);
+                                    normalVerts[5].AddRange(v1);
                                 }
                                 else if (nNorm == -Vector3.UnitX)
                                 {
@@ -453,7 +464,7 @@ namespace Messier.Engine
                                 }
                                 else if (nNorm == -Vector3.UnitZ)
                                 {
-                                    normalVerts[5].AddRange(v1);
+                                    normalVerts[2].AddRange(v1);    //Switched around to make the normal array cleaner
                                 }
                                 else throw new Exception("Invalid Face!");
 
