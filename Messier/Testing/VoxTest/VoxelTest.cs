@@ -478,11 +478,25 @@ namespace Messier.Testing.VoxTest
                 Visible = true
             };
 
+            v[2] = new VoxelTypeMap.VoxelTypeData()
+            {
+                Color = Vector4.One,
+                Visible = true
+            };
+
             Chunk c = new Chunk();
             c.InitDataStore();
             c.VoxelMap = v;
             c.MaterialMap[0] = 0;
             c.MaterialMap[1] = 1;
+            c.MaterialMap[2] = 2;
+
+            Chunk c0 = new Chunk();
+            c0.InitDataStore();
+            c0.VoxelMap = v;
+            c0.MaterialMap[0] = 0;
+            c0.MaterialMap[1] = 1;
+            c0.MaterialMap[2] = 2;
 
             OpenSimplexNoise s = new OpenSimplexNoise(0);
 
@@ -493,9 +507,9 @@ namespace Messier.Testing.VoxTest
             {
                 //GraphicsDevice.Winding = FaceWinding.Clockwise;
                 GraphicsDevice.CullMode = OpenTK.Graphics.OpenGL4.CullFaceMode.Back;
-                GraphicsDevice.CullEnabled = !false;
+                GraphicsDevice.CullEnabled = false;
                 GraphicsDevice.DepthTestEnabled = true;
-                //GraphicsDevice.Wireframe = true;
+                GraphicsDevice.Wireframe = true;
                 Random rng = new Random();
                 double n = 128;
 
@@ -503,13 +517,25 @@ namespace Messier.Testing.VoxTest
                     for (int y = 0; y < c.Side; y++)
                         for (int z = 0; z < c.Side; z++)
                         {
-                            //c[x, y, z] = 1;
+                            c[x, y, z] = 1;
                             //if (n++ == 1) c[x, y, z] = 1;
                             //c[x, y, z] = (byte)((x + y + z) % 2);
-                            c[x, y, z] = (byte)(s.Evaluate(x / n, y / n, z / n) >= 0.5 ? 0 : 1);
+                            //c[x, y, z] = (byte)(s.Evaluate(x / n, y / n, z / n) >= 0.2 ? rng.Next(1, 3) : 0);
+                        }
+
+
+                for (int x = c0.Side; x < c0.Side * 2; x++)
+                    for (int y = 0; y < c0.Side; y++)
+                        for (int z = 0; z < c0.Side; z++)
+                        {
+                            //c[x, y, z] = 1;
+                            //if (n++ == 1) c[x, y, z] = 1;
+                            //c0[x - c0.Side, y, z] = (byte)((x + y + z) % 2);
+                            c0[x - c0.Side, y, z] = (byte)(s.Evaluate(x / n, y / n, z / n) >= 0.2 ? rng.Next(1, 3) : 0);
                         }
 
                 c.GenerateMesh();
+                c0.GenerateMesh();
 
                 ShaderSource vShader = ShaderSource.Load(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader, "Testing/VoxTest/vertex.glsl");
                 ShaderSource fShader = ShaderSource.Load(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader, "Testing/VoxTest/fragment.glsl");
@@ -533,14 +559,20 @@ namespace Messier.Testing.VoxTest
             GraphicsDevice.Render += (e) =>
             {
                 GraphicsDevice.Clear();
-
-                for(int j = 0; j < 100; j++)
-                for (int i = 0; i < 6; i++)
+                for (int i = 0; i < 1; i++)
                 {
+
                     c.Bind(i);
+                    prog.Set("World", Matrix4.Identity);
                     prog.Set("Normal", c.Normals[i]);
                     GraphicsDevice.SetShaderProgram(prog);
                     GraphicsDevice.Draw(OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, 0, c.vBuf[i].dataLen);
+
+                    //c0.Bind(i);
+                    //prog.Set("World", Matrix4.CreateTranslation(128, 0, 0));
+                    //prog.Set("Normal", c0.Normals[i]);
+                    //GraphicsDevice.SetShaderProgram(prog);
+                    //GraphicsDevice.Draw(OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, 0, c0.vBuf[i].dataLen);
                 }
                 GraphicsDevice.SwapBuffers();
             };

@@ -21,6 +21,8 @@ void main()
 	gl_Position = Proj * View * World * vec4(position.xyz, 1);
 	gl_Position.z = log2(max(1e-6, 1.0 + gl_Position.w)) * Fcoef - 1.0; 	
 
+	gl_PointSize = 10;
+
 	material = int(position.w);
 	flogz = 1.0 + gl_Position.w;
 }

@@ -23,8 +23,8 @@ namespace Messier.Engine
     public class Chunk : IVoxelData
     {
         public int Side = 128;
-        public int BitPerVoxel = 1;
-        
+        public int BitPerVoxel = 2;
+
         public int VoxelsPerInt
         {
             get
@@ -97,237 +97,319 @@ namespace Messier.Engine
             return VoxelMap[MaterialMap[this[x, y, z]]].Visible;
         }
 
+        private byte GetMat(int a0, int a1, int a2, int u, int v)
+        {
+            Vector3 a = Vector3.Zero;
+            a[u] = a0;
+            a[v] = a1;
+            a[(v + 1) % 3] = a2;
+
+            return this[a];
+        }
+
         public void GenerateMesh()
         {
             #region Naive Mesher
             /*
-            List<float> verts = new List<float>();
+            List<float>[] nVerts = new List<float>[6];
+            for (int i = 0; i < 6; i++) nVerts[i] = new List<float>();
+
             int baseX = -Side / 2;
             int baseY = -Side / 2;
             int baseZ = -Side / 2;
-
             for (int x = 0; x < Side; x++)
             {
                 for (int y = 0; y < Side; y++)
                 {
                     for (int z = 0; z < Side; z++)
                     {
-
                         int x0 = baseX + x;
                         int y0 = baseY + y;
                         int z0 = baseZ + z;
-
                         if (!VoxelMap[MaterialMap[this[x, y, z]]].Visible) continue;
-
                         if ((z == 0) | !VoxelMap[MaterialMap[this[x, y, z - 1]]].Visible)
                         {
-
-                            verts.Add(x0 + 1);
-                            verts.Add(y0);
-                            verts.Add(z0);
-                            verts.Add(MaterialMap[this[x, y, z]]);
-
-                            verts.Add(x0);
-                            verts.Add(y0);
-                            verts.Add(z0);
-                            verts.Add(MaterialMap[this[x, y, z]]);
-
-                            verts.Add(x0 + 1);
-                            verts.Add(y0 + 1);
-                            verts.Add(z0);
-                            verts.Add(MaterialMap[this[x, y, z]]);
-
-                            verts.Add(x0 + 1);
-                            verts.Add(y0 + 1);
-                            verts.Add(z0);
-                            verts.Add(MaterialMap[this[x, y, z]]);
-
-                            verts.Add(x0);
-                            verts.Add(y0);
-                            verts.Add(z0);
-                            verts.Add(MaterialMap[this[x, y, z]]);
-
-                            verts.Add(x0);
-                            verts.Add(y0 + 1);
-                            verts.Add(z0);
-                            verts.Add(MaterialMap[this[x, y, z]]);
+                            nVerts[2].Add(x0 + 1);
+                            nVerts[2].Add(y0);
+                            nVerts[2].Add(z0);
+                            nVerts[2].Add(MaterialMap[this[x, y, z]]);
+                            nVerts[2].Add(x0);
+                            nVerts[2].Add(y0);
+                            nVerts[2].Add(z0);
+                            nVerts[2].Add(MaterialMap[this[x, y, z]]);
+                            nVerts[2].Add(x0 + 1);
+                            nVerts[2].Add(y0 + 1);
+                            nVerts[2].Add(z0);
+                            nVerts[2].Add(MaterialMap[this[x, y, z]]);
+                            nVerts[2].Add(x0 + 1);
+                            nVerts[2].Add(y0 + 1);
+                            nVerts[2].Add(z0);
+                            nVerts[2].Add(MaterialMap[this[x, y, z]]);
+                            nVerts[2].Add(x0);
+                            nVerts[2].Add(y0);
+                            nVerts[2].Add(z0);
+                            nVerts[2].Add(MaterialMap[this[x, y, z]]);
+                            nVerts[2].Add(x0);
+                            nVerts[2].Add(y0 + 1);
+                            nVerts[2].Add(z0);
+                            nVerts[2].Add(MaterialMap[this[x, y, z]]);
                         }
-
                         if ((z == (Side - 1)) | !VoxelMap[MaterialMap[this[x, y, z + 1]]].Visible)
                         {
-                            verts.Add(x0);
-                            verts.Add(y0);
-                            verts.Add(z0 + 1);
-                            verts.Add(MaterialMap[this[x, y, z]]);
-
-                            verts.Add(x0 + 1);
-                            verts.Add(y0);
-                            verts.Add(z0 + 1);
-                            verts.Add(MaterialMap[this[x, y, z]]);
-
-                            verts.Add(x0 + 1);
-                            verts.Add(y0 + 1);
-                            verts.Add(z0 + 1);
-                            verts.Add(MaterialMap[this[x, y, z]]);
-
-                            verts.Add(x0 + 1);
-                            verts.Add(y0 + 1);
-                            verts.Add(z0 + 1);
-                            verts.Add(MaterialMap[this[x, y, z]]);
-
-                            verts.Add(x0);
-                            verts.Add(y0 + 1);
-                            verts.Add(z0 + 1);
-                            verts.Add(MaterialMap[this[x, y, z]]);
-
-                            verts.Add(x0);
-                            verts.Add(y0);
-                            verts.Add(z0 + 1);
-                            verts.Add(MaterialMap[this[x, y, z]]);
+                            nVerts[5].Add(x0);
+                            nVerts[5].Add(y0);
+                            nVerts[5].Add(z0 + 1);
+                            nVerts[5].Add(MaterialMap[this[x, y, z]]);
+                            nVerts[5].Add(x0 + 1);
+                            nVerts[5].Add(y0);
+                            nVerts[5].Add(z0 + 1);
+                            nVerts[5].Add(MaterialMap[this[x, y, z]]);
+                            nVerts[5].Add(x0 + 1);
+                            nVerts[5].Add(y0 + 1);
+                            nVerts[5].Add(z0 + 1);
+                            nVerts[5].Add(MaterialMap[this[x, y, z]]);
+                            nVerts[5].Add(x0 + 1);
+                            nVerts[5].Add(y0 + 1);
+                            nVerts[5].Add(z0 + 1);
+                            nVerts[5].Add(MaterialMap[this[x, y, z]]);
+                            nVerts[5].Add(x0);
+                            nVerts[5].Add(y0 + 1);
+                            nVerts[5].Add(z0 + 1);
+                            nVerts[5].Add(MaterialMap[this[x, y, z]]);
+                            nVerts[5].Add(x0);
+                            nVerts[5].Add(y0);
+                            nVerts[5].Add(z0 + 1);
+                            nVerts[5].Add(MaterialMap[this[x, y, z]]);
                         }
-
                         if ((y == 0) | !VoxelMap[MaterialMap[this[x, y - 1, z]]].Visible)
                         {
-                            verts.Add(x0);
-                            verts.Add(y0);
-                            verts.Add(z0);
-                            verts.Add(MaterialMap[this[x, y, z]]);
-
-                            verts.Add(x0 + 1);
-                            verts.Add(y0);
-                            verts.Add(z0 + 1);
-                            verts.Add(MaterialMap[this[x, y, z]]);
-
-                            verts.Add(x0);
-                            verts.Add(y0);
-                            verts.Add(z0 + 1);
-                            verts.Add(MaterialMap[this[x, y, z]]);
-
-                            verts.Add(x0);
-                            verts.Add(y0);
-                            verts.Add(z0);
-                            verts.Add(MaterialMap[this[x, y, z]]);
-
-                            verts.Add(x0 + 1);
-                            verts.Add(y0);
-                            verts.Add(z0);
-                            verts.Add(MaterialMap[this[x, y, z]]);
-
-                            verts.Add(x0 + 1);
-                            verts.Add(y0);
-                            verts.Add(z0 + 1);
-                            verts.Add(MaterialMap[this[x, y, z]]);
+                            nVerts[1].Add(x0);
+                            nVerts[1].Add(y0);
+                            nVerts[1].Add(z0);
+                            nVerts[1].Add(MaterialMap[this[x, y, z]]);
+                            nVerts[1].Add(x0 + 1);
+                            nVerts[1].Add(y0);
+                            nVerts[1].Add(z0 + 1);
+                            nVerts[1].Add(MaterialMap[this[x, y, z]]);
+                            nVerts[1].Add(x0);
+                            nVerts[1].Add(y0);
+                            nVerts[1].Add(z0 + 1);
+                            nVerts[1].Add(MaterialMap[this[x, y, z]]);
+                            nVerts[1].Add(x0);
+                            nVerts[1].Add(y0);
+                            nVerts[1].Add(z0);
+                            nVerts[1].Add(MaterialMap[this[x, y, z]]);
+                            nVerts[1].Add(x0 + 1);
+                            nVerts[1].Add(y0);
+                            nVerts[1].Add(z0);
+                            nVerts[1].Add(MaterialMap[this[x, y, z]]);
+                            nVerts[1].Add(x0 + 1);
+                            nVerts[1].Add(y0);
+                            nVerts[1].Add(z0 + 1);
+                            nVerts[1].Add(MaterialMap[this[x, y, z]]);
                         }
-
                         if ((y == Side - 1) | !VoxelMap[MaterialMap[this[x, y + 1, z]]].Visible)
                         {
-                            verts.Add(x0);
-                            verts.Add(y0 + 1);
-                            verts.Add(z0);
-                            verts.Add(MaterialMap[this[x, y, z]]);
-
-                            verts.Add(x0);
-                            verts.Add(y0 + 1);
-                            verts.Add(z0 + 1);
-                            verts.Add(MaterialMap[this[x, y, z]]);
-
-                            verts.Add(x0 + 1);
-                            verts.Add(y0 + 1);
-                            verts.Add(z0 + 1);
-                            verts.Add(MaterialMap[this[x, y, z]]);
-
-                            verts.Add(x0 + 1);
-                            verts.Add(y0 + 1);
-                            verts.Add(z0 + 1);
-                            verts.Add(MaterialMap[this[x, y, z]]);
-
-                            verts.Add(x0 + 1);
-                            verts.Add(y0 + 1);
-                            verts.Add(z0);
-                            verts.Add(MaterialMap[this[x, y, z]]);
-
-                            verts.Add(x0);
-                            verts.Add(y0 + 1);
-                            verts.Add(z0);
-                            verts.Add(MaterialMap[this[x, y, z]]);
+                            nVerts[4].Add(x0);
+                            nVerts[4].Add(y0 + 1);
+                            nVerts[4].Add(z0);
+                            nVerts[4].Add(MaterialMap[this[x, y, z]]);
+                            nVerts[4].Add(x0);
+                            nVerts[4].Add(y0 + 1);
+                            nVerts[4].Add(z0 + 1);
+                            nVerts[4].Add(MaterialMap[this[x, y, z]]);
+                            nVerts[4].Add(x0 + 1);
+                            nVerts[4].Add(y0 + 1);
+                            nVerts[4].Add(z0 + 1);
+                            nVerts[4].Add(MaterialMap[this[x, y, z]]);
+                            nVerts[4].Add(x0 + 1);
+                            nVerts[4].Add(y0 + 1);
+                            nVerts[4].Add(z0 + 1);
+                            nVerts[4].Add(MaterialMap[this[x, y, z]]);
+                            nVerts[4].Add(x0 + 1);
+                            nVerts[4].Add(y0 + 1);
+                            nVerts[4].Add(z0);
+                            nVerts[4].Add(MaterialMap[this[x, y, z]]);
+                            nVerts[4].Add(x0);
+                            nVerts[4].Add(y0 + 1);
+                            nVerts[4].Add(z0);
+                            nVerts[4].Add(MaterialMap[this[x, y, z]]);
                         }
-
                         if ((x == 0) | !VoxelMap[MaterialMap[this[x - 1, y, z]]].Visible)
                         {
-                            verts.Add(x0);
-                            verts.Add(y0);
-                            verts.Add(z0);
-                            verts.Add(MaterialMap[this[x, y, z]]);
+                            nVerts[0].Add(x0);
+                            nVerts[0].Add(y0);
+                            nVerts[0].Add(z0);
+                            nVerts[0].Add(MaterialMap[this[x, y, z]]);
 
-                            verts.Add(x0);
-                            verts.Add(y0 + 1);
-                            verts.Add(z0);
-                            verts.Add(MaterialMap[this[x, y, z]]);
+                            nVerts[0].Add(x0);
+                            nVerts[0].Add(y0 + 1);
+                            nVerts[0].Add(z0);
+                            nVerts[0].Add(MaterialMap[this[x, y, z]]);
 
-                            verts.Add(x0);
-                            verts.Add(y0 + 1);
-                            verts.Add(z0 + 1);
-                            verts.Add(MaterialMap[this[x, y, z]]);
+                            nVerts[0].Add(x0);
+                            nVerts[0].Add(y0 + 1);
+                            nVerts[0].Add(z0 + 1);
+                            nVerts[0].Add(MaterialMap[this[x, y, z]]);
 
-                            verts.Add(x0);
-                            verts.Add(y0 + 1);
-                            verts.Add(z0 + 1);
-                            verts.Add(MaterialMap[this[x, y, z]]);
+                            nVerts[0].Add(x0);
+                            nVerts[0].Add(y0 + 1);
+                            nVerts[0].Add(z0 + 1);
+                            nVerts[0].Add(MaterialMap[this[x, y, z]]);
 
-                            verts.Add(x0);
-                            verts.Add(y0);
-                            verts.Add(z0 + 1);
-                            verts.Add(MaterialMap[this[x, y, z]]);
+                            nVerts[0].Add(x0);
+                            nVerts[0].Add(y0);
+                            nVerts[0].Add(z0 + 1);
+                            nVerts[0].Add(MaterialMap[this[x, y, z]]);
 
-                            verts.Add(x0);
-                            verts.Add(y0);
-                            verts.Add(z0);
-                            verts.Add(MaterialMap[this[x, y, z]]);
+                            nVerts[0].Add(x0);
+                            nVerts[0].Add(y0);
+                            nVerts[0].Add(z0);
+                            nVerts[0].Add(MaterialMap[this[x, y, z]]);
                         }
-
                         if ((x == Side - 1) | !VoxelMap[MaterialMap[this[x + 1, y, z]]].Visible)
                         {
-                            verts.Add(x0 + 1);
-                            verts.Add(y0);
-                            verts.Add(z0);
-                            verts.Add(MaterialMap[this[x, y, z]]);
+                            nVerts[3].Add(x0);
+                            nVerts[3].Add(y0);
+                            nVerts[3].Add(z0);
+                            nVerts[3].Add(MaterialMap[this[x, y, z]]);
 
-                            verts.Add(x0 + 1);
-                            verts.Add(y0 + 1);
-                            verts.Add(z0);
-                            verts.Add(MaterialMap[this[x, y, z]]);
+                            nVerts[3].Add(x0);
+                            nVerts[3].Add(y0 + 1);
+                            nVerts[3].Add(z0);
+                            nVerts[3].Add(MaterialMap[this[x, y, z]]);
 
-                            verts.Add(x0 + 1);
-                            verts.Add(y0 + 1);
-                            verts.Add(z0 + 1);
-                            verts.Add(MaterialMap[this[x, y, z]]);
+                            nVerts[3].Add(x0);
+                            nVerts[3].Add(y0 + 1);
+                            nVerts[3].Add(z0 + 1);
+                            nVerts[3].Add(MaterialMap[this[x, y, z]]);
 
-                            verts.Add(x0 + 1);
-                            verts.Add(y0 + 1);
-                            verts.Add(z0 + 1);
-                            verts.Add(MaterialMap[this[x, y, z]]);
+                            nVerts[3].Add(x0);
+                            nVerts[3].Add(y0 + 1);
+                            nVerts[3].Add(z0 + 1);
+                            nVerts[3].Add(MaterialMap[this[x, y, z]]);
 
-                            verts.Add(x0 + 1);
-                            verts.Add(y0);
-                            verts.Add(z0 + 1);
-                            verts.Add(MaterialMap[this[x, y, z]]);
+                            nVerts[3].Add(x0);
+                            nVerts[3].Add(y0);
+                            nVerts[3].Add(z0 + 1);
+                            nVerts[3].Add(MaterialMap[this[x, y, z]]);
 
-                            verts.Add(x0 + 1);
-                            verts.Add(y0);
-                            verts.Add(z0);
-                            verts.Add(MaterialMap[this[x, y, z]]);
+                            nVerts[3].Add(x0);
+                            nVerts[3].Add(y0);
+                            nVerts[3].Add(z0);
+                            nVerts[3].Add(MaterialMap[this[x, y, z]]);
                         }
                     }
                 }
             }
-            
-            vArray = new VertexArray();
-            vBuf.BufferData(0, verts.ToArray(), OpenTK.Graphics.OpenGL4.BufferUsageHint.StaticDraw);
-            vArray.SetBufferObject(0, vBuf, 4, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Float);
+
+            vArray = new VertexArray[6];
+            vBuf = new GPUBuffer[6];
+
+            for (int i = 0; i < 6; i++)
+            {
+                vBuf[i] = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ArrayBuffer);
+                vArray[i] = new VertexArray();
+
+                vBuf[i].BufferData(0, nVerts[i].ToArray(), OpenTK.Graphics.OpenGL4.BufferUsageHint.StaticDraw);
+                vArray[i].SetBufferObject(0, vBuf[i], 4, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Float);
+            }
             */
             #endregion
 
+            #region Naive Surface Nets
+
+            List<float>[] nVerts = new List<float>[6];
+            for (int i = 0; i < 6; i++) nVerts[i] = new List<float>();
+
+            int baseX = -Side / 2;
+            int baseY = -Side / 2;
+            int baseZ = -Side / 2;
+
+            for (int d = 0; d < 3; d++)
+            {
+                Vector3 u0 = new Vector3();
+                Vector3 v0 = new Vector3();
+                Vector3 w0 = new Vector3();
+
+                Vector3 a = new Vector3();
+                int u = (d + 1) % 3;
+                int v = (d + 2) % 3;
+
+                u0[u] = 1;
+                v0[v] = 1;
+                w0[d] = 1;
+
+                int ctrl = 0;
+
+                for (int x = 0; x < Side; x++)
+                    for (int y = 0; y < Side;)
+                    {
+                        bool done = false;
+
+                        a[u] = x;
+                        a[v] = y;
+
+                        for (a[d] = 0; a[d] < Side; a[d]++)
+                        {
+                            if (VoxelMap[MaterialMap[this[a]]].Visible)
+                            {
+                                done = true;
+                                break;
+                            }
+                        }
+
+                        if (done)
+                        {
+                            nVerts[0].Add(baseX + a[0]);
+                            nVerts[0].Add(baseY + a[1]);
+                            nVerts[0].Add(baseZ + a[2]);
+
+                            nVerts[0].Add(MaterialMap[this[a]]);
+                        }
+                        if (ctrl == 0)
+                        {
+                            x++;
+                        }
+                        else if (ctrl == 1)
+                        {
+                            x--;
+                            y++;
+                        }
+                        else if (ctrl == 2)
+                        {
+                            x++;
+                            y--;
+                        }
+                        else if (ctrl == 3)
+                        {
+                            y++;
+                        }
+                        else if (ctrl == 4)
+                        {
+                            x--;
+                            ctrl = -1;
+                        }
+                        ctrl++;
+
+                    }
+            }
+
+            vArray = new VertexArray[6];
+            vBuf = new GPUBuffer[6];
+
+            for (int i = 0; i < 1; i++)
+            {
+                vBuf[i] = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ArrayBuffer);
+                vArray[i] = new VertexArray();
+
+                vBuf[i].BufferData(0, nVerts[i].ToArray(), OpenTK.Graphics.OpenGL4.BufferUsageHint.StaticDraw);
+                vArray[i].SetBufferObject(0, vBuf[i], 4, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Float);
+            }
+            #endregion
+
             #region Greedy Mesher
+            /*
             List<Vector4>[] rVerts = new List<Vector4>[6];
             for (int i = 0; i < 6; i++) rVerts[i] = new List<Vector4>();
 
@@ -368,7 +450,7 @@ namespace Messier.Engine
                             if (mask[n])
                             {
                                 // Compute width
-                                for (w = 1; i + w < Side && mask[n + w]; ++w) ;
+                                for (w = 1; i + w < Side && mask[n + w] && GetMat(i + w, j, x[(v + 1) % 3], u, v) == GetMat(i, j, x[(v + 1) % 3], u, v); ++w) ;
 
                                 // Compute height (this is slightly awkward
                                 var done = false;
@@ -376,7 +458,7 @@ namespace Messier.Engine
                                 {
                                     for (k = 0; k < w; ++k)
                                     {
-                                        if (!mask[n + k + h * Side])
+                                        if (!mask[n + k + h * Side] | GetMat(i + k, j + h, x[(v + 1) % 3], u, v) != GetMat(i, j, x[(v + 1) % 3], u, v))
                                         {
                                             done = true;
                                             break;
@@ -421,6 +503,8 @@ namespace Messier.Engine
                                 nNorm.Y = (float)Math.Round(nNorm.Y);
                                 nNorm.Z = (float)Math.Round(nNorm.Z);
 
+                                curVoxel = new Vector3(x[0], x[1], x[2]);
+
                                 if (nNorm.X > 0 | nNorm.Y > 0 | nNorm.Z > 0)
                                 {
                                     Vector3 tmp0 = v0[1];
@@ -434,12 +518,13 @@ namespace Messier.Engine
 
                                     v0[3] = tmp1;
                                     v0[4] = tmp0;
+
                                 }
 
                                 Vector4[] v1 = new Vector4[v0.Length];
                                 for (int q0 = 0; q0 < v1.Length; q0++)
                                 {
-                                    v1[q0] = new Vector4(v0[q0], MaterialMap[this[x[0], x[1], x[2]]]);
+                                    v1[q0] = new Vector4(v0[q0], MaterialMap[this[curVoxel]]);
                                 }
 
                                 if (nNorm == Vector3.UnitX)
@@ -507,7 +592,7 @@ namespace Messier.Engine
                 vBuf[i].BufferData(0, vertex[i], OpenTK.Graphics.OpenGL4.BufferUsageHint.StaticDraw);
                 vArray[i].SetBufferObject(0, vBuf[i], 4, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Float);
             }
-
+    */
             #endregion
         }
 
