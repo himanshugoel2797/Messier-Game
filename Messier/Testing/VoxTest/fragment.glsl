@@ -11,6 +11,12 @@ uniform float Fcoef;
 uniform vec3 Normal;
 uniform float timer;
 
+
+uniform mat4 World;
+uniform mat4 View;
+uniform mat4 Proj;
+uniform vec3 lightDir;
+
 //  <www.shadertoy.com/view/XsX3zB>
 //  by Nikita Miropolskiy
 
@@ -72,7 +78,9 @@ float snoiseFractal(vec3 m) {
 
 void main()
 {
-	Color.rgb = vec3(material)/3 * Normal;
+	Color.rgb = normalize((World * vec4(Normal, 0)).xyz);
+	Color.rgb = vec3(0.2) + vec3(0.5, 0.5, 0.5) * max(dot(lightDir, Color.rgb), 0);
+	//if(material == 1)Color.rgb = vec3(1);
 	Color.a = 1;
 	gl_FragDepth = log2(flogz) * Fcoef * 0.5;
 }

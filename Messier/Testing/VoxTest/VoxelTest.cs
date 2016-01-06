@@ -507,31 +507,21 @@ namespace Messier.Testing.VoxTest
             {
                 //GraphicsDevice.Winding = FaceWinding.Clockwise;
                 GraphicsDevice.CullMode = OpenTK.Graphics.OpenGL4.CullFaceMode.Back;
-                GraphicsDevice.CullEnabled = false;
+                GraphicsDevice.CullEnabled = !false;
                 GraphicsDevice.DepthTestEnabled = true;
-                GraphicsDevice.Wireframe = true;
-                Random rng = new Random();
-                double n = 128;
+                //GraphicsDevice.Wireframe = true;
+                Random rng = new Random(0);
+                double n = 64;
 
                 for (int x = 0; x < c.Side; x++)
                     for (int y = 0; y < c.Side; y++)
                         for (int z = 0; z < c.Side; z++)
                         {
-                            c[x, y, z] = 1;
-                            //if (n++ == 1) c[x, y, z] = 1;
-                            //c[x, y, z] = (byte)((x + y + z) % 2);
-                            //c[x, y, z] = (byte)(s.Evaluate(x / n, y / n, z / n) >= 0.2 ? rng.Next(1, 3) : 0);
-                        }
-
-
-                for (int x = c0.Side; x < c0.Side * 2; x++)
-                    for (int y = 0; y < c0.Side; y++)
-                        for (int z = 0; z < c0.Side; z++)
-                        {
                             //c[x, y, z] = 1;
                             //if (n++ == 1) c[x, y, z] = 1;
-                            //c0[x - c0.Side, y, z] = (byte)((x + y + z) % 2);
-                            c0[x - c0.Side, y, z] = (byte)(s.Evaluate(x / n, y / n, z / n) >= 0.2 ? rng.Next(1, 3) : 0);
+                            //c[x, y, z] = (byte)((x + y + z) % 2);
+                            c[x, y, z] = (byte)(s.Evaluate(x / n, y / n, z / n) >= 0.5 ? 0 : 1);
+                            c0[x, y, z] = (byte)(s.Evaluate((x + c0.Side) / n, y / n, z / n) >= 0.5 ? 0 : 1);
                         }
 
                 c.GenerateMesh();
@@ -553,32 +543,37 @@ namespace Messier.Testing.VoxTest
                 prog.Set("View", context.View);
                 prog.Set("Proj", context.Projection);
                 prog.Set("Fcoef", (float)(2.0f / Math.Log(1000001) / Math.Log(2)));
+                prog.Set("lightDir", new Vector3(5, 10, 5).Normalized());
             };
 
 
             GraphicsDevice.Render += (e) =>
             {
                 GraphicsDevice.Clear();
-                for (int i = 0; i < 1; i++)
-                {
+                c.Bind();
+                prog.Set("World", World);
 
-                    c.Bind(i);
-                    prog.Set("World", Matrix4.Identity);
+                for (int i = 0; i < 6; i++)
+                {
                     prog.Set("Normal", c.Normals[i]);
                     GraphicsDevice.SetShaderProgram(prog);
-                    GraphicsDevice.Draw(OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, 0, c.vBuf[i].dataLen);
+                    GraphicsDevice.Draw(OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, c.NormalOffsets[i], c.NormalGroupSizes[i]);
+                }
 
-                    //c0.Bind(i);
-                    //prog.Set("World", Matrix4.CreateTranslation(128, 0, 0));
-                    //prog.Set("Normal", c0.Normals[i]);
-                    //GraphicsDevice.SetShaderProgram(prog);
-                    //GraphicsDevice.Draw(OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, 0, c0.vBuf[i].dataLen);
+                c0.Bind();
+                prog.Set("World", Matrix4.CreateTranslation(c0.Side * c0.Scale, 0, 0));
+
+                for (int i = 0; i < 6; i++)
+                {
+                    prog.Set("Normal", c0.Normals[i]);
+                    GraphicsDevice.SetShaderProgram(prog);
+                    GraphicsDevice.Draw(OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, c0.NormalOffsets[i], c0.NormalGroupSizes[i]);
                 }
                 GraphicsDevice.SwapBuffers();
             };
 
             GraphicsDevice.Name = "Voxel Test";
-            GraphicsDevice.Run(60, 60);
+            GraphicsDevice.Run(60, 0);
             if (GraphicsDevice.Cleanup != null) GraphicsDevice.Cleanup();
         }
     }

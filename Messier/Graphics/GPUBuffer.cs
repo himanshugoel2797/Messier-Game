@@ -15,23 +15,54 @@ namespace Messier.Graphics
         internal int size;
         public int dataLen;
 
+        private IntPtr addr;
+
         public GPUBuffer(BufferTarget target)
         {
             id = GL.GenBuffer();
             this.target = target;
             GraphicsDevice.Cleanup += Dispose;
+            addr = IntPtr.Zero;
+        }
+
+        public GPUBuffer(BufferTarget target, long size, bool read)
+        {
+            id = GL.GenBuffer();
+            this.target = target;
+
+            GPUStateMachine.BindBuffer(target, id);
+            GL.BufferStorage(target, (IntPtr)size, IntPtr.Zero, BufferStorageFlags.MapPersistentBit | BufferStorageFlags.MapCoherentBit | BufferStorageFlags.MapWriteBit | (read ? BufferStorageFlags.MapReadBit : 0));
+
+            addr = GL.MapBuffer(target, BufferAccess.WriteOnly | (BufferAccess)(read ? 1 : 0));
+            GPUStateMachine.UnbindBuffer(target);
         }
 
         public void BufferData<T>(int offset, T[] data, BufferUsageHint hint) where T : struct
         {
             if (data.Length < 1) throw new Exception("Buffer is empty!");
-            GPUStateMachine.BindBuffer(target, id);
 
             dataLen = data.Length;
             size = (Marshal.SizeOf(data[0]) * data.Length);
-            GL.BufferData(target, (IntPtr)size, data, hint);
 
-            GPUStateMachine.UnbindBuffer(target);
+            if (addr == IntPtr.Zero)
+            {
+                GPUStateMachine.BindBuffer(target, id);
+
+                dataLen = data.Length;
+                size = (Marshal.SizeOf(data[0]) * data.Length);
+                GL.BufferData(target, (IntPtr)size, data, hint);
+
+                GPUStateMachine.UnbindBuffer(target);
+            }
+            else
+            {
+                throw new Exception("This buffer is mapped!");
+            }
+        }
+
+        public IntPtr GetPtr()
+        {
+            return addr;
         }
 
         #region IDisposable Support
@@ -47,6 +78,12 @@ namespace Messier.Graphics
 
                 }
 
+                if (addr != IntPtr.Zero)
+                {
+                    addr = IntPtr.Zero;
+                    GPUStateMachine.BindBuffer(target, id);
+                    GL.UnmapBuffer(target);
+                }
                 GL.DeleteBuffer(id);
                 id = 0;
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
