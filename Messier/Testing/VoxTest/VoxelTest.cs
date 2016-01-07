@@ -503,13 +503,19 @@ namespace Messier.Testing.VoxTest
             //Rendering stuff
             ShaderProgram prog = null;
 
+            
+
             GraphicsDevice.Load += () =>
             {
                 //GraphicsDevice.Winding = FaceWinding.Clockwise;
                 GraphicsDevice.CullMode = OpenTK.Graphics.OpenGL4.CullFaceMode.Back;
-                GraphicsDevice.CullEnabled = !false;
                 GraphicsDevice.DepthTestEnabled = true;
-                //GraphicsDevice.Wireframe = true;
+                GraphicsDevice.Window.KeyUp += (k, e) =>
+                {
+                    if (e.Key == OpenTK.Input.Key.Z) GraphicsDevice.Wireframe = !GraphicsDevice.Wireframe;
+                    else if (e.Key == OpenTK.Input.Key.C) GraphicsDevice.CullEnabled = !GraphicsDevice.CullEnabled;
+                };
+
                 Random rng = new Random(0);
                 double n = 64;
 
@@ -544,6 +550,7 @@ namespace Messier.Testing.VoxTest
                 prog.Set("Proj", context.Projection);
                 prog.Set("Fcoef", (float)(2.0f / Math.Log(1000001) / Math.Log(2)));
                 prog.Set("lightDir", new Vector3(5, 10, 5).Normalized());
+
             };
 
 
@@ -553,22 +560,25 @@ namespace Messier.Testing.VoxTest
                 c.Bind();
                 prog.Set("World", World);
 
-                for (int i = 0; i < 6; i++)
-                {
-                    prog.Set("Normal", c.Normals[i]);
-                    GraphicsDevice.SetShaderProgram(prog);
-                    GraphicsDevice.Draw(OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, c.NormalOffsets[i], c.NormalGroupSizes[i]);
-                }
+                prog.Set("range1", c.NormalOffsets[1]);
+                prog.Set("range2", c.NormalOffsets[2]);
+                prog.Set("range3", c.NormalOffsets[3]);
+                prog.Set("range4", c.NormalOffsets[4]);
+                prog.Set("range5", c.NormalOffsets[5]);
+                GraphicsDevice.SetShaderProgram(prog);
+                GraphicsDevice.Draw(OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, 0, c.NormalGroupSizes[6]);
 
                 c0.Bind();
                 prog.Set("World", Matrix4.CreateTranslation(c0.Side * c0.Scale, 0, 0));
 
-                for (int i = 0; i < 6; i++)
-                {
-                    prog.Set("Normal", c0.Normals[i]);
-                    GraphicsDevice.SetShaderProgram(prog);
-                    GraphicsDevice.Draw(OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, c0.NormalOffsets[i], c0.NormalGroupSizes[i]);
-                }
+                prog.Set("range1", c0.NormalOffsets[1]);
+                prog.Set("range2", c0.NormalOffsets[2]);
+                prog.Set("range3", c0.NormalOffsets[3]);
+                prog.Set("range4", c0.NormalOffsets[4]);
+                prog.Set("range5", c0.NormalOffsets[5]);
+                GraphicsDevice.SetShaderProgram(prog);
+                GraphicsDevice.Draw(OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, 0, c0.NormalGroupSizes[6]);
+
                 GraphicsDevice.SwapBuffers();
             };
 

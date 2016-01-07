@@ -72,6 +72,13 @@ namespace Messier.Graphics
         public static Action Cleanup { get; set; }
         public static OpenTK.Input.KeyboardDevice Keyboard { get { return game.Keyboard; } }
         public static OpenTK.Input.MouseDevice Mouse { get { return game.Mouse; } }
+        public static GameWindow Window
+        {
+            get
+            {
+                return game;
+            }
+        }
         public static int PatchCount
         {
             set
