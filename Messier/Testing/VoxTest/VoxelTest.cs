@@ -21,11 +21,8 @@ namespace Messier.Testing.VoxTest
             };
             Matrix4 World = Matrix4.Identity;
 
+
             VoxelTypeMap v = new VoxelTypeMap();
-
-            GPUBuffer materialData = null;
-            BufferTexture bufMaterialData = null;
-
             v[0] = new VoxelTypeMap.VoxelTypeData()
             {
                 Color = Vector4.One,
@@ -46,13 +43,14 @@ namespace Messier.Testing.VoxTest
 
             Chunk c = new Chunk();
             c.InitDataStore();
+            Chunk c0 = new Chunk();
+            c0.InitDataStore();
+
             c.VoxelMap = v;
             c.MaterialMap[0] = 0;
             c.MaterialMap[1] = 1;
             c.MaterialMap[2] = 2;
 
-            Chunk c0 = new Chunk();
-            c0.InitDataStore();
             c0.VoxelMap = v;
             c0.MaterialMap[0] = 0;
             c0.MaterialMap[1] = 1;
@@ -62,8 +60,6 @@ namespace Messier.Testing.VoxTest
 
             //Rendering stuff
             ShaderProgram prog = null;
-
-
 
             GraphicsDevice.Load += () =>
             {
@@ -79,6 +75,10 @@ namespace Messier.Testing.VoxTest
                 Random rng = new Random(0);
                 double n = 64;
 
+                v.UpdateBuffers();
+                GraphicsDevice.SetBufferTexture(0, v.ColorData);
+
+
                 for (int x = 0; x < c.Side; x++)
                     for (int y = 0; y < c.Side; y++)
                         for (int z = 0; z < c.Side; z++)
@@ -86,26 +86,14 @@ namespace Messier.Testing.VoxTest
                             //c[x, y, z] = 1;
                             //if (n++ == 1) c[x, y, z] = 1;
                             //c[x, y, z] = (byte)((x + y + z) % 2);
-                            c[x, y, z] = (byte)(s.Evaluate(x / n, y / n, z / n) >= 0.5 ? 0 : 2);
-                            c0[x, y, z] = (byte)(s.Evaluate((x + c0.Side) / n, y / n, z / n) >= 0.5 ? 0 : 1);
+                            c[x, y, z] = (byte)(s.Evaluate(x / n, y / n, z / n) >= 0.5 ? 0 : rng.Next(1, 3));
+                            c0[x, y, z] = (byte)(s.Evaluate((x + c0.Side) / n, y / n, z / n) >= 0.5 ? 0 : rng.Next(1, 3));
                         }
 
                 c.GenerateMesh();
                 c0.GenerateMesh();
 
-                materialData = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.UniformBuffer);
 
-                Vector4[] materialColors = new Vector4[v.Voxels.Count];
-                for (int i = 0; i < materialColors.Length; i++)
-                {
-                    materialColors[i] = v[v.Voxels.Keys.ElementAt(i)].Color;
-                }
-
-                materialData.BufferData(0, materialColors, OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicDraw);
-                bufMaterialData = new BufferTexture();
-                bufMaterialData.SetStorage(materialData, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba32f);
-
-                GraphicsDevice.SetBufferTexture(0, bufMaterialData);
 
                 ShaderSource vShader = ShaderSource.Load(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader, "Testing/VoxTest/vertex.glsl");
                 ShaderSource fShader = ShaderSource.Load(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader, "Testing/VoxTest/fragment.glsl");

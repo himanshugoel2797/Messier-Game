@@ -32,6 +32,10 @@ namespace Messier.Graphics
             boundBuffers[BufferTarget.ArrayBuffer] = new List<Stack<int>>();
             boundBuffers[BufferTarget.ArrayBuffer].Add(new Stack<int>());
             boundBuffers[BufferTarget.ArrayBuffer][0].Push(0);
+            
+            boundBuffers[BufferTarget.TextureBuffer] = new List<Stack<int>>();
+            boundBuffers[BufferTarget.TextureBuffer].Add(new Stack<int>());
+            boundBuffers[BufferTarget.TextureBuffer][0].Push(0);
 
             boundBuffers[BufferTarget.ElementArrayBuffer] = new List<Stack<int>>();
             boundBuffers[BufferTarget.ElementArrayBuffer].Add(new Stack<int>());
