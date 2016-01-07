@@ -22,7 +22,7 @@ namespace Messier.Engine
 
     public class Chunk : IVoxelData
     {
-        public int Side = 32;
+        public int Side = 64;
         public int BitPerVoxel = 4;
 
         public float Scale
@@ -121,9 +121,9 @@ namespace Messier.Engine
                 nMaterials[i] = new List<short>();
             }
 
-            int baseX = 0;//-Side / 2;
-            int baseY = 0;//-Side / 2;
-            int baseZ = 0;//-Side / 2;
+            int baseX = 0;
+            int baseY = 0;
+            int baseZ = 0;
 
             float s = 1;
 
@@ -517,16 +517,5 @@ namespace Messier.Engine
         {
             GraphicsDevice.SetVertexArray(vArray);
         }
-    }
-
-    public class SVO : IVoxelData
-    {
-        public VoxelDataType datType
-        {
-            get; set;
-        } = VoxelDataType.OctreeNode;
-
-        public IVoxelData[] Top;
-        public IVoxelData[] Bottom;
     }
 }

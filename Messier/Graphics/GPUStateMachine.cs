@@ -10,28 +10,36 @@ namespace Messier.Graphics
 {
     public static class GPUStateMachine
     {
-        static Dictionary<BufferTarget, Stack<int>> boundBuffers;
         static Stack<int> vertexArrays, framebuffers;
         static List<Dictionary<TextureTarget, Stack<int>>> boundTextures;
-        static Dictionary<BufferTarget, List<Stack<int>>> feedbackBindings;
+        static Dictionary<BufferTarget, List<Stack<int>>> boundBuffers;
 
         static GPUStateMachine()
         {
-            feedbackBindings = new Dictionary<BufferTarget, List<Stack<int>>>();
-            feedbackBindings[BufferTarget.TransformFeedbackBuffer] = new List<Stack<int>>();
+            boundBuffers = new Dictionary<BufferTarget, List<Stack<int>>>();
+            boundBuffers[BufferTarget.TransformFeedbackBuffer] = new List<Stack<int>>();
+            boundBuffers[BufferTarget.UniformBuffer] = new List<Stack<int>>();
 
-            for(int i = 0; i < 8; i++)
+            for (int i = 0; i < 8; i++)
             {
-                feedbackBindings[BufferTarget.TransformFeedbackBuffer].Add(new Stack<int>());
-                feedbackBindings[BufferTarget.TransformFeedbackBuffer][i].Push(0);
+                boundBuffers[BufferTarget.TransformFeedbackBuffer].Add(new Stack<int>());
+                boundBuffers[BufferTarget.TransformFeedbackBuffer][i].Push(0);
+
+                boundBuffers[BufferTarget.UniformBuffer].Add(new Stack<int>());
+                boundBuffers[BufferTarget.UniformBuffer][i].Push(0);
             }
 
-            boundBuffers = new Dictionary<BufferTarget, Stack<int>>();
-            boundBuffers[BufferTarget.ArrayBuffer] = new Stack<int>();
-            boundBuffers[BufferTarget.ArrayBuffer].Push(0);
+            boundBuffers[BufferTarget.ArrayBuffer] = new List<Stack<int>>();
+            boundBuffers[BufferTarget.ArrayBuffer].Add(new Stack<int>());
+            boundBuffers[BufferTarget.ArrayBuffer][0].Push(0);
 
-            boundBuffers[BufferTarget.ElementArrayBuffer] = new Stack<int>();
-            boundBuffers[BufferTarget.ElementArrayBuffer].Push(0);
+            boundBuffers[BufferTarget.ElementArrayBuffer] = new List<Stack<int>>();
+            boundBuffers[BufferTarget.ElementArrayBuffer].Add(new Stack<int>());
+            boundBuffers[BufferTarget.ElementArrayBuffer][0].Push(0);
+
+            boundBuffers[BufferTarget.UniformBuffer] = new List<Stack<int>>();
+            boundBuffers[BufferTarget.UniformBuffer].Add(new Stack<int>());
+            boundBuffers[BufferTarget.UniformBuffer][0].Push(0);
 
             boundTextures = new List<Dictionary<TextureTarget, Stack<int>>>();
             for (int i = 0; i < 8; i++)
@@ -41,6 +49,8 @@ namespace Messier.Graphics
                 boundTextures[i][TextureTarget.Texture2D].Push(0);
                 boundTextures[i][TextureTarget.TextureCubeMap] = new Stack<int>();
                 boundTextures[i][TextureTarget.TextureCubeMap].Push(0);
+                boundTextures[i][TextureTarget.TextureBuffer] = new Stack<int>();
+                boundTextures[i][TextureTarget.TextureBuffer].Push(0);
             }
 
             vertexArrays = new Stack<int>();
@@ -54,33 +64,33 @@ namespace Messier.Graphics
         public static void BindBuffer(BufferTarget target, int id)
         {
             if (target == BufferTarget.TransformFeedbackBuffer) throw new Exception("Incorrect Function Called, Use Overload for TransformFeedbackBuffers");
-            if (boundBuffers[target].Count == 0) boundBuffers[target].Push(0);
+            if (boundBuffers[target][0].Count == 0) boundBuffers[target][0].Push(0);
 
-            if (boundBuffers[target].Peek() != id || id == 0) GL.BindBuffer(target, id);
-            boundBuffers[target].Push(id);
+            if (boundBuffers[target][0].Peek() != id || id == 0) GL.BindBuffer(target, id);
+            boundBuffers[target][0].Push(id);
         }
 
         public static void UnbindBuffer(BufferTarget target)
         {
-            boundBuffers[target].Pop();
-            BindBuffer(target, boundBuffers[target].Pop());
+            boundBuffers[target][0].Pop();
+            BindBuffer(target, boundBuffers[target][0].Pop());
         }
         #endregion
 
-        #region Feedback buffer object state
-        public static void BindFeedbackBuffer(BufferTarget target, int id, int index, IntPtr off, IntPtr size)
+        #region Uniform buffer object state
+        public static void BindBuffer(BufferTarget target, int id, int index, IntPtr off, IntPtr size)
         {
-            if (target != BufferTarget.TransformFeedbackBuffer) throw new Exception("Incorrect Function Called, Use other Overload");
-            if (feedbackBindings[target][index].Count == 0) feedbackBindings[target][index].Push(0);
+            if (target != BufferTarget.TransformFeedbackBuffer && target != BufferTarget.UniformBuffer) throw new Exception("Incorrect Function Called, Use other Overload");
+            if (boundBuffers[target][index].Count == 0) boundBuffers[target][index].Push(0);
 
-            if (feedbackBindings[target][index].Peek() != id || id == 0) GL.BindBufferRange((BufferRangeTarget)target, index, id, off, size);
-            feedbackBindings[target][index].Push(id);
+            if (boundBuffers[target][index].Peek() != id || id == 0) GL.BindBufferRange((BufferRangeTarget)target, index, id, off, size);
+            boundBuffers[target][index].Push(id);
         }
 
-        public static void UnbindFeedbackBuffer(BufferTarget target, int index)
+        public static void UnbindBuffer(BufferTarget target, int index)
         {
-            feedbackBindings[target][index].Pop();
-            BindBuffer(target, feedbackBindings[target][index].Pop());
+            boundBuffers[target][index].Pop();
+            BindBuffer(target, boundBuffers[target][index].Pop());
         }
         #endregion
 

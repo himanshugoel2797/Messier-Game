@@ -80,13 +80,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Engine\BlockManager.cs" />
     <Compile Include="Engine\BoundingBox.cs" />
     <Compile Include="Engine\SceneGraph\EngineObject.cs" />
     <Compile Include="Engine\SceneGraph\ObjectBatch.cs" />
-    <Compile Include="Engine\SVO.cs" />
+    <Compile Include="Engine\Chunk.cs" />
     <Compile Include="Engine\TextWriter.cs" />
     <Compile Include="Engine\VoxelTypeMap.cs" />
     <Compile Include="Graphics\BitmapTextureSource.cs" />
+    <Compile Include="Graphics\BufferTexture.cs" />
     <Compile Include="Graphics\Cameras\Camera.cs" />
     <Compile Include="Graphics\Cameras\FirstPersonCamera.cs" />
     <Compile Include="Graphics\CubeMapTextureSource.cs" />
@@ -104,6 +106,7 @@
     <Compile Include="Graphics\Prefabs\FullScreenQuadFactory.cs" />
     <Compile Include="Graphics\ShaderProgram.cs" />
     <Compile Include="Graphics\ShaderSource.cs" />
+    <Compile Include="Graphics\SimplexNoise.cs" />
     <Compile Include="Graphics\Texture.cs" />
     <Compile Include="Graphics\ITextureSource.cs" />
     <Compile Include="Graphics\VertexArray.cs" />

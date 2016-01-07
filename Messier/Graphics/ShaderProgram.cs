@@ -45,10 +45,17 @@ namespace Messier.Graphics
             GraphicsDevice.Cleanup += Dispose;
         }
 
+
         public void SetVaryings(params string[] varyings)
         {
             GL.TransformFeedbackVaryings(id, varyings.Length, varyings, TransformFeedbackMode.SeparateAttribs);
             GL.LinkProgram(id);
+        }
+
+        public void SetUBO(string name, int index)
+        {
+            int loc = GL.GetUniformBlockIndex(id, name);
+            GL.UniformBlockBinding(id, loc, index);
         }
 
         public void Set(string name, Vector3 vec)

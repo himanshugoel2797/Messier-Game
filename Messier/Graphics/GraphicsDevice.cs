@@ -259,6 +259,19 @@ namespace Messier.Graphics
             curIndices = indices;
         }
 
+        public static void SetUniformBuffer(GPUBuffer buf, int bufIndex, int baseOff, int size)
+        {
+            if (buf.target != BufferTarget.UniformBuffer) throw new ArgumentException("Argument must be a uniform buffer!");
+
+            GPUStateMachine.BindBuffer(BufferTarget.UniformBuffer, buf.id, bufIndex, (IntPtr)baseOff, (IntPtr)size);
+        }
+
+        public static void SetBufferTexture(int slot, BufferTexture b)
+        {
+            if (b != null) GPUStateMachine.BindTexture(slot, TextureTarget.TextureBuffer, b.id);
+            else GPUStateMachine.BindTexture(slot, TextureTarget.TextureBuffer, 0);
+        }
+
         public static void SetFramebuffer(Framebuffer framebuf)
         {
             if (curFramebuffer != null && curFramebuffer.id != framebuf.id) GPUStateMachine.UnbindFramebuffer();
@@ -300,7 +313,7 @@ namespace Messier.Graphics
             if (curFramebuffer == null) return;
 
             for (int i = 0; i < textures.Count; i++) GPUStateMachine.BindTexture(i, textures[i].texTarget, textures[i].id);
-            for (int i = 0; i < feedbackBufs.Count; i++) GPUStateMachine.BindFeedbackBuffer(BufferTarget.TransformFeedbackBuffer, feedbackBufs[i].Item1.id, i, (IntPtr)feedbackBufs[i].Item2, (IntPtr)feedbackBufs[i].Item3);
+            for (int i = 0; i < feedbackBufs.Count; i++) GPUStateMachine.BindBuffer(BufferTarget.TransformFeedbackBuffer, feedbackBufs[i].Item1.id, i, (IntPtr)feedbackBufs[i].Item2, (IntPtr)feedbackBufs[i].Item3);
 
 
 
@@ -316,7 +329,7 @@ namespace Messier.Graphics
 
             if (feedbackBufs.Count > 0) GL.EndTransformFeedback();
 
-            for (int i = 0; i < feedbackBufs.Count; i++) GPUStateMachine.UnbindFeedbackBuffer(BufferTarget.TransformFeedbackBuffer, i);
+            for (int i = 0; i < feedbackBufs.Count; i++) GPUStateMachine.UnbindBuffer(BufferTarget.TransformFeedbackBuffer, i);
             for (int i = 0; i < textures.Count; i++) GPUStateMachine.UnbindTexture(i, textures[i].texTarget);
 
             textures.Clear();
