@@ -100,10 +100,13 @@ namespace Messier.Engine
             }
         }
 
-        /*
+        private int curMaterial = 0;
         private bool data(int x, int y, int z)
         {
-            return VoxelMap[MaterialMap[this[x, y, z]]].Visible;
+            return this[x, y, z] == curMaterial && VoxelMap[MaterialMap[this[x, y, z]]].Visible
+                && (!VoxelMap[MaterialMap[this[x + 1, y, z]]].Visible | !VoxelMap[MaterialMap[this[x - 1, y, z]]].Visible
+                | !VoxelMap[MaterialMap[this[x, y + 1, z]]].Visible | !VoxelMap[MaterialMap[this[x, y - 1, z]]].Visible
+                | !VoxelMap[MaterialMap[this[x, y, z + 1]]].Visible | !VoxelMap[MaterialMap[this[x, y, z - 1]]].Visible);
         }
 
         private byte GetMat(int a0, int a1, int a2, int u, int v)
@@ -114,7 +117,7 @@ namespace Messier.Engine
             a[(v + 1) % 3] = a2;
 
             return this[a];
-        }*/
+        }
 
         public void GenerateMesh()
         {
@@ -328,15 +331,6 @@ namespace Messier.Engine
             */
             #endregion
 
-            #region Naive Mesher Asynchronous
-            ChunkReady = false;
-
-            int baseX = 0;
-            int baseY = 0;
-            int baseZ = 0;
-
-            float s = 1;
-
             Func<float, float, float, int> packVerts = (x, y, z) =>
             {
                 byte x0 = (byte)((int)x & ((1 << 10) - 1));
@@ -347,6 +341,16 @@ namespace Messier.Engine
 
                 return packed;
             };
+            #region Naive Mesher Asynchronous
+            /*
+            ChunkReady = false;
+
+            int baseX = 0;
+            int baseY = 0;
+            int baseZ = 0;
+
+            float s = 1;
+
 
             BufferStreamer.QueueTask((a) =>
             {
@@ -558,64 +562,95 @@ namespace Messier.Engine
 
                 ThreadPool.QueueUserWorkItem(new WaitCallback(runner), new object[] { vMat, vBuf, vArray });
             }, null);
+            */
             #endregion
 
+            #region Advanced Greedy Mesher
+            ChunkReady = false;
+            List<int>[] rV = new List<int>[6];
+            List<short>[] rM = new List<short>[6];
 
-            #region Greedy Mesher
-            /*
-            List<Vector4>[] rVerts = new List<Vector4>[6];
-            for (int i = 0; i < 6; i++) rVerts[i] = new List<Vector4>();
-
-            Parallel.For(0, 3, (d) =>
+            for (int i = 0; i < 6; i++)
             {
-                List<Vector4>[] normalVerts = new List<Vector4>[6];
-                for (int i0 = 0; i0 < 6; i0++) normalVerts[i0] = new List<Vector4>();
+                rV[i] = new List<int>();
+                rM[i] = new List<short>();
+            }
 
-                int i, j, k, l, w, h, u = (d + 1) % 3, v = (d + 2) % 3;
-                int[] x = new int[3];
-                int[] q = new int[3];
-                bool[] mask = new bool[Side * Side];
+            List<short> ValidMats = new List<short>();
+            for (int i = 0; i < MaterialMap.Length; i++)
+            {
+                if (VoxelMap[MaterialMap[i]].Visible && !ValidMats.Contains((short)MaterialMap[i])) ValidMats.Add((short)MaterialMap[i]);
+            }
 
-                q[d] = 1;
-
-                for (x[d] = -1; x[d] < Side;)
+            for (int m = 0; m < ValidMats.Count; m++)
+            {
+                for (int d = 0; d < 3; d++)
                 {
-                    // Compute the mask
-                    int n = 0;
-                    for (x[v] = 0; x[v] < Side; ++x[v])
-                    {
-                        for (x[u] = 0; x[u] < Side; ++x[u])
-                        {
-                            mask[n++] = (0 <= x[d] ? data(x[0], x[1], x[2]) : false) !=
-                                (x[d] < Side - 1 ? data(x[0] + q[0], x[1] + q[1], x[2] + q[2]) : false);
-                        }
-                    }
+                    Vector3 norm = Vector3.Zero;
+                    norm[d] = 1;
 
-                    // Increment x[d]
-                    ++x[d];
 
-                    // Generate mesh for mask using lexicographic ordering
-                    n = 0;
-                    for (j = 0; j < Side; ++j)
+                    int u = (d + 1) % 3;
+                    int v = (d + 2) % 3;
+
+                    Vector3 x = Vector3.Zero;
+                    bool empty = true;
+
+                    for (x[d] = -1; x[d] < Side;)
                     {
-                        for (i = 0; i < Side;)
+                        norm = Vector3.Zero;
+                        norm[d] = 1;
+
+                        bool[] mask2 = new bool[Side];
+                        bool[,] mask = new bool[Side, Side];
+
+                        for (x[u] = 0; x[u] < Side; x[u]++)
                         {
-                            if (mask[n])
+                            bool sum = false;
+                            for (x[v] = 0; x[v] < Side; x[v]++)
                             {
-                                // Compute width
-                                for (w = 1; i + w < Side; ++w)
+                                //Compute a mask
+                                if ((!VoxelMap[MaterialMap[this[x + norm]]].Visible | !VoxelMap[MaterialMap[this[x - norm]]].Visible))
                                 {
-                                    if (GetMat(i + w, j, x[d], u, v) == GetMat(i, j, x[d], u, v)) break;
-                                    if (mask[n + w]) break;
+                                    mask[(int)x[u], (int)x[v]] = (0 <= x[d] ? MaterialMap[this[x]] == ValidMats[m] : false) !=
+                                        (x[d] < Side - 1 ? MaterialMap[this[x + norm]] == ValidMats[m] : false);
+
+                                    empty = false;
+                                    sum = true;
+                                }
+                            }
+                            mask2[(int)x[u]] = sum;
+                        }
+                        x[d]++;
+                        if (empty) continue;
+
+                        //Now determine the edges from the mask
+                        for (int i = 0; i < Side; i++)
+                        {
+                            if (!mask2[i])
+                            {
+                                continue;
+                            }
+                            int minW = Side;
+                            for (int j = 0; j < Side;)
+                            {
+                                if (!mask[i, j])
+                                {
+                                    j++;
+                                    continue;
                                 }
 
-                                // Compute height (this is slightly awkward
-                                var done = false;
-                                for (h = 1; j + h < Side; ++h)
+                                int w = 1, h = 1;
+                                for (; i + w < Side && mask[i + w, j]; w++) ;
+
+                                if (w < minW) minW = w;
+
+                                bool done = false;
+                                for (; j + h < Side; h++)
                                 {
-                                    for (k = 0; k < w; ++k)
+                                    for (int i0 = 0; i0 < w; i0++)
                                     {
-                                        if (!mask[n + k + h * Side] | GetMat(i + k, j + h, x[d], u, v) != GetMat(i, j, x[d], u, v))
+                                        if (!mask[i + i0, j + h])
                                         {
                                             done = true;
                                             break;
@@ -624,14 +659,200 @@ namespace Messier.Engine
                                     if (done) break;
                                 }
 
-                                // Add quad
-                                x[u] = i; x[v] = j;
-                                int[] du = new int[3];
-                                int[] dv = new int[3];
-                                du[u] = w;
-                                dv[v] = h;
 
-                                Vector3[] v0 = new Vector3[] {
+                                Vector3 tL = Vector3.Zero;
+                                Vector3 tR = Vector3.Zero;
+                                Vector3 bL = Vector3.Zero;
+                                Vector3 bR = Vector3.Zero;
+
+                                x[u] = i;
+                                x[v] = j;
+
+                                tL[d] = x[d];
+                                tR[d] = x[d];
+                                bL[d] = x[d];
+                                bR[d] = x[d];
+
+                                tL[u] = i;
+                                tL[v] = j;
+
+                                tR[u] = i + w;
+                                tR[v] = j;
+
+                                bL[u] = i;
+                                bL[v] = j + h;
+
+                                bR[u] = i + w;
+                                bR[v] = j + h;
+
+                                norm = Vector3.Zero;
+                                norm[d] = 1;
+
+                                Vector3 cPos = Vector3.Zero;
+                                cPos[u] = i;
+                                cPos[v] = j;
+                                cPos[d] = x[d] - 1;
+
+                                if (!VoxelMap[MaterialMap[this[cPos]]].Visible) norm[d] = -1;
+                                else norm[d] = 1;
+
+                                int normIndex = 0;
+                                for (; normIndex < Normals.Length && Normals[normIndex] != norm; normIndex++) ;
+
+                                if (normIndex <= 2)
+                                {
+                                    rV[normIndex].Add(packVerts(tR.X, tR.Y, tR.Z));
+                                    rV[normIndex].Add(packVerts(tL.X, tL.Y, tL.Z));
+                                    rV[normIndex].Add(packVerts(bL.X, bL.Y, bL.Z));
+                                    rV[normIndex].Add(packVerts(bL.X, bL.Y, bL.Z));
+                                    rV[normIndex].Add(packVerts(bR.X, bR.Y, bR.Z));
+                                    rV[normIndex].Add(packVerts(tR.X, tR.Y, tR.Z));
+                                }
+                                else
+                                {
+                                    rV[normIndex].Add(packVerts(tL.X, tL.Y, tL.Z));
+                                    rV[normIndex].Add(packVerts(tR.X, tR.Y, tR.Z));
+                                    rV[normIndex].Add(packVerts(bL.X, bL.Y, bL.Z));
+                                    rV[normIndex].Add(packVerts(bL.X, bL.Y, bL.Z));
+                                    rV[normIndex].Add(packVerts(tR.X, tR.Y, tR.Z));
+                                    rV[normIndex].Add(packVerts(bR.X, bR.Y, bR.Z));
+                                }
+
+                                rM[normIndex].Add(ValidMats[m]);
+                                rM[normIndex].Add(ValidMats[m]);
+                                rM[normIndex].Add(ValidMats[m]);
+                                rM[normIndex].Add(ValidMats[m]);
+                                rM[normIndex].Add(ValidMats[m]);
+                                rM[normIndex].Add(ValidMats[m]);
+
+                                for (int w0 = i; w0 < i + w; w0++)
+                                    for (int j0 = j; j0 < j + h; j0++)
+                                    {
+                                        mask[w0, j0] = false;
+                                    }
+
+                                j += h;
+                            }
+                        }
+
+
+                    }
+
+                }
+            }   //d loop
+
+
+            NormalOffsets = new int[6];
+            NormalGroupSizes = new int[7];
+
+            List<int> vertex = new List<int>();
+            List<short> mat = new List<short>();
+            for (int i = 0; i < 6; i++)
+            {
+                NormalOffsets[i] = vertex.Count;
+                NormalGroupSizes[i] = rV[i].Count;
+                NormalGroupSizes[6] += NormalGroupSizes[i];
+                vertex.AddRange(rV[i]);
+                mat.AddRange(rM[i]);
+            }
+
+            BufferStreamer.QueueTask((a) =>
+            {
+                vArray = new VertexArray();
+                vBuf = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ArrayBuffer);
+                vBuf.BufferData(0, vertex.ToArray(), OpenTK.Graphics.OpenGL4.BufferUsageHint.StaticDraw);
+                vArray.SetBufferObject(0, vBuf, 4, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Int2101010Rev);
+
+                vMat = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ArrayBuffer);
+                vMat.BufferData(0, mat.ToArray(), OpenTK.Graphics.OpenGL4.BufferUsageHint.StaticDraw);
+                vArray.SetBufferObject(1, vMat, 1, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Short);
+                ChunkReady = true;
+            }, null);
+            #endregion
+
+            #region Greedy Mesher
+            /*
+            ChunkReady = false;
+
+            List<int>[] rVerts = new List<int>[6];
+            List<short>[] rMats = new List<short>[6];
+            for (int i = 0; i < 6; i++)
+            {
+                rVerts[i] = new List<int>();
+                rMats[i] = new List<short>();
+            }
+            for (int d = 0; d < 3; d++)
+            {
+                List<int>[] normalVerts = new List<int>[6];
+                List<short>[] mats = new List<short>[6];
+
+                for (int i0 = 0; i0 < 6; i0++)
+                {
+                    mats[i0] = new List<short>();
+                    normalVerts[i0] = new List<int>();
+                }
+
+                for (int q9 = 0; q9 < MaterialMap.Length; q9++)
+                {
+                    curMaterial = q9;
+
+                    int i, j, k, l, w, h, u = (d + 1) % 3, v = (d + 2) % 3;
+                    int[] x = new int[3];
+                    int[] q = new int[3];
+                    bool[] mask = new bool[Side * Side];
+
+                    q[d] = 1;
+
+                    for (x[d] = -1; x[d] < Side;)
+                    {
+                        // Compute the mask
+                        int n = 0;
+                        for (x[v] = 0; x[v] < Side; ++x[v])
+                        {
+                            for (x[u] = 0; x[u] < Side; ++x[u])
+                            {
+                                mask[n++] = (0 <= x[d] ? data(x[0], x[1], x[2]) : false) !=
+                                    (x[d] < Side - 1 ? data(x[0] + q[0], x[1] + q[1], x[2] + q[2]) : false);
+                            }
+                        }
+
+                        // Increment x[d]
+                        ++x[d];
+
+                        // Generate mesh for mask using lexicographic ordering
+                        n = 0;
+                        for (j = 0; j < Side; ++j)
+                        {
+                            for (i = 0; i < Side;)
+                            {
+                                if (mask[n])
+                                {
+                                    // Compute width
+                                    for (w = 1; i + w < Side && mask[n + w]; ++w) ;
+
+                                    // Compute height (this is slightly awkward
+                                    var done = false;
+                                    for (h = 1; j + h < Side; ++h)
+                                    {
+                                        for (k = 0; k < w; ++k)
+                                        {
+                                            if (!mask[n + k + h * Side])
+                                            {
+                                                done = true;
+                                                break;
+                                            }
+                                        }
+                                        if (done) break;
+                                    }
+
+                                    // Add quad
+                                    x[u] = i; x[v] = j;
+                                    int[] du = new int[3];
+                                    int[] dv = new int[3];
+                                    du[u] = w;
+                                    dv[v] = h;
+
+                                    Vector3[] v0 = new Vector3[] {
                                         new Vector3(x[0], x[1], x[2]),
                                         new Vector3(x[0] + du[0], x[1] + du[1], x[2] + du[2]),
                                         new Vector3(x[0] + du[0] + dv[0], x[1] + du[1] + dv[1], x[2] + du[2] + dv[2]),
@@ -640,116 +861,142 @@ namespace Messier.Engine
                                         new Vector3(x[0], x[1], x[2])
                                 };
 
-                                Vector3 curVoxel = Vector3.Zero;
-                                curVoxel[u] = i;
-                                curVoxel[v] = j;
-                                curVoxel[d] = x[d] - 1;
+                                    Vector3 curVoxel = Vector3.Zero;
+                                    curVoxel[u] = i;
+                                    curVoxel[v] = j;
+                                    curVoxel[d] = x[d] - 1;
 
-                                Vector3 nNorm = Vector3.Zero;
+                                    Vector3 nNorm = Vector3.Zero;
 
-                                if (data((int)curVoxel.X, (int)curVoxel.Y, (int)curVoxel.Z))
-                                {
-                                    nNorm[d] = -1;
+                                    if (data((int)curVoxel.X, (int)curVoxel.Y, (int)curVoxel.Z))
+                                    {
+                                        nNorm[d] = -1;
+                                    }
+                                    else
+                                    {
+                                        nNorm[d] = 1;
+                                    }
+
+                                    nNorm.X = (float)Math.Round(nNorm.X);
+                                    nNorm.Y = (float)Math.Round(nNorm.Y);
+                                    nNorm.Z = (float)Math.Round(nNorm.Z);
+
+                                    curVoxel = new Vector3(x[0], x[1], x[2]) + nNorm;
+
+                                    if (nNorm.X > 0 | nNorm.Y > 0 | nNorm.Z > 0)
+                                    {
+                                        Vector3 tmp0 = v0[1];
+                                        Vector3 tmp1 = v0[2];
+
+                                        v0[1] = tmp1;
+                                        v0[2] = tmp0;
+
+                                        tmp0 = v0[3];
+                                        tmp1 = v0[4];
+
+                                        v0[3] = tmp1;
+                                        v0[4] = tmp0;
+
+                                    }
+
+                                    int[] v1 = new int[v0.Length];
+                                    for (int q0 = 0; q0 < v1.Length; q0++)
+                                    {
+                                        v1[q0] = packVerts(v0[q0].X, v0[q0].Y, v0[q0].Z);
+
+                                    }
+
+                                    if (nNorm == Vector3.UnitX)
+                                    {
+                                        normalVerts[0].AddRange(v1);
+                                        for (int i0 = 0; i0 < v1.Length; i0++) mats[0].Add((short)MaterialMap[this[curVoxel]]);
+                                    }
+                                    else if (nNorm == Vector3.UnitY)
+                                    {
+                                        normalVerts[1].AddRange(v1);
+                                        for (int i0 = 0; i0 < v1.Length; i0++) mats[1].Add((short)MaterialMap[this[curVoxel]]);
+                                    }
+                                    else if (nNorm == Vector3.UnitZ)
+                                    {
+                                        normalVerts[5].AddRange(v1);
+                                        for (int i0 = 0; i0 < v1.Length; i0++) mats[5].Add((short)MaterialMap[this[curVoxel]]);
+                                    }
+                                    else if (nNorm == -Vector3.UnitX)
+                                    {
+                                        normalVerts[3].AddRange(v1);
+                                        for (int i0 = 0; i0 < v1.Length; i0++) mats[3].Add((short)MaterialMap[this[curVoxel]]);
+                                    }
+                                    else if (nNorm == -Vector3.UnitY)
+                                    {
+                                        normalVerts[4].AddRange(v1);
+                                        for (int i0 = 0; i0 < v1.Length; i0++) mats[4].Add((short)MaterialMap[this[curVoxel]]);
+                                    }
+                                    else if (nNorm == -Vector3.UnitZ)
+                                    {
+                                        normalVerts[2].AddRange(v1);    //Switched around to make the normal array cleaner
+                                        for (int i0 = 0; i0 < v1.Length; i0++) mats[2].Add((short)MaterialMap[this[curVoxel]]);
+                                    }
+                                    else throw new Exception("Invalid Face!");
+
+                                    // Zero-out mask
+                                    for (l = 0; l < h; ++l)
+                                    {
+                                        for (k = 0; k < w; ++k)
+                                        {
+                                            mask[n + k + l * Side] = false;
+                                        }
+                                    }
+
+                                    // Increment counters and continue
+                                    i += w; n += w;
                                 }
                                 else
                                 {
-                                    nNorm[d] = 1;
+                                    ++i; ++n;
                                 }
-
-                                nNorm.X = (float)Math.Round(nNorm.X);
-                                nNorm.Y = (float)Math.Round(nNorm.Y);
-                                nNorm.Z = (float)Math.Round(nNorm.Z);
-
-                                curVoxel = new Vector3(x[0], x[1], x[2]);
-
-                                if (nNorm.X > 0 | nNorm.Y > 0 | nNorm.Z > 0)
-                                {
-                                    Vector3 tmp0 = v0[1];
-                                    Vector3 tmp1 = v0[2];
-
-                                    v0[1] = tmp1;
-                                    v0[2] = tmp0;
-
-                                    tmp0 = v0[3];
-                                    tmp1 = v0[4];
-
-                                    v0[3] = tmp1;
-                                    v0[4] = tmp0;
-
-                                }
-
-                                Vector4[] v1 = new Vector4[v0.Length];
-                                for (int q0 = 0; q0 < v1.Length; q0++)
-                                {
-                                    v1[q0] = new Vector4(v0[q0], MaterialMap[this[curVoxel]]);
-                                }
-
-                                if (nNorm == Vector3.UnitX)
-                                {
-                                    normalVerts[0].AddRange(v1);
-                                }
-                                else if (nNorm == Vector3.UnitY)
-                                {
-                                    normalVerts[1].AddRange(v1);
-                                }
-                                else if (nNorm == Vector3.UnitZ)
-                                {
-                                    normalVerts[5].AddRange(v1);
-                                }
-                                else if (nNorm == -Vector3.UnitX)
-                                {
-                                    normalVerts[3].AddRange(v1);
-                                }
-                                else if (nNorm == -Vector3.UnitY)
-                                {
-                                    normalVerts[4].AddRange(v1);
-                                }
-                                else if (nNorm == -Vector3.UnitZ)
-                                {
-                                    normalVerts[2].AddRange(v1);    //Switched around to make the normal array cleaner
-                                }
-                                else throw new Exception("Invalid Face!");
-
-                                // Zero-out mask
-                                for (l = 0; l < h; ++l)
-                                {
-                                    for (k = 0; k < w; ++k)
-                                    {
-                                        mask[n + k + l * Side] = false;
-                                    }
-                                }
-
-                                // Increment counters and continue
-                                i += w; n += w;
-                            }
-                            else
-                            {
-                                ++i; ++n;
                             }
                         }
                     }
+
+                    lock (rVerts)
+                    {
+                        for (int i0 = 0; i0 < 6; i0++)
+                        {
+                            rMats[i0].AddRange(mats[i0]);
+                            rVerts[i0].AddRange(normalVerts[i0]);
+                        }
+                    }
                 }
+            }
 
-                lock (rVerts)
-                {
-                    for (int i0 = 0; i0 < 6; i0++) rVerts[i0].AddRange(normalVerts[i0]);
-                }
-            });
+            NormalOffsets = new int[6];
+            NormalGroupSizes = new int[7];
 
-            Vector4[][] vertex = new Vector4[6][];
-            for (int i = 0; i < 6; i++) vertex[i] = rVerts[i].ToArray();
-
-            vArray = new VertexArray[6];
-            vBuf = new GPUBuffer[6];
-
+            List<int> vertex = new List<int>();
+            List<short> mat = new List<short>();
             for (int i = 0; i < 6; i++)
             {
-                vArray[i] = new VertexArray();
-                vBuf[i] = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ArrayBuffer);
-                vBuf[i].BufferData(0, vertex[i], OpenTK.Graphics.OpenGL4.BufferUsageHint.StaticDraw);
-                vArray[i].SetBufferObject(0, vBuf[i], 4, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Float);
+                NormalOffsets[i] = vertex.Count;
+                NormalGroupSizes[i] = rVerts[i].Count;
+                NormalGroupSizes[6] += NormalGroupSizes[i];
+                vertex.AddRange(rVerts[i]);
+                mat.AddRange(rMats[i]);
             }
+
+            BufferStreamer.QueueTask((a) =>
+            {
+                vArray = new VertexArray();
+                vBuf = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ArrayBuffer);
+                vBuf.BufferData(0, vertex.ToArray(), OpenTK.Graphics.OpenGL4.BufferUsageHint.StaticDraw);
+                vArray.SetBufferObject(0, vBuf, 4, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Int2101010Rev);
+
+                vMat = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ArrayBuffer);
+                vMat.BufferData(0, mat.ToArray(), OpenTK.Graphics.OpenGL4.BufferUsageHint.StaticDraw);
+                vArray.SetBufferObject(1, vMat, 1, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Short);
+                ChunkReady = true;
+            }, null);
             */
+
             #endregion
         }
 

@@ -80,7 +80,7 @@ namespace Messier.Testing.VoxTest
 
                 //World *= Matrix4.CreateRotationY(0.01f);
 
-                prog.Set("World", World);
+                prog.Set("World", Matrix4.Identity);
                 prog.Set("View", context.View);
                 prog.Set("Proj", context.Projection);
                 prog.Set("Fcoef", (float)(2.0f / Math.Log(1000001) / Math.Log(2)));
@@ -106,6 +106,7 @@ namespace Messier.Testing.VoxTest
                             Vector3 dir = (context.Camera as FirstPersonCamera).Direction;
                             if (Vector3.Dot(dir.Normalized(), a.Normalized()) >= -0.3)
                             {
+                                //Chunk c = man.Draw(-Vector3.UnitY * 123, out World);
                                 Chunk c = man.Draw(context.Camera.Position + a, out World);
                                 if (c.ChunkReady)
                                 {

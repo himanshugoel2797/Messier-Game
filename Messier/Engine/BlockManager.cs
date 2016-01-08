@@ -52,7 +52,7 @@ namespace Messier.Engine
                     chunks[pos].MaterialMap[i] = i;
                 }
 
-                ThreadPool.QueueUserWorkItem(new WaitCallback((a) =>
+                //ThreadPool.QueueUserWorkItem(new WaitCallback((a) =>
                 {
                     Vector3 p0 = pos - Vector3.One * Side / 2;
 
@@ -74,7 +74,8 @@ namespace Messier.Engine
                             }
                         }
                     chunks[pos].GenerateMesh();
-                }));
+                }
+                //));
             }
             return chunks[pos];
         }
