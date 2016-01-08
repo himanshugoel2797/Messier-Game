@@ -2,6 +2,7 @@
 using Messier.Graphics;
 using Messier.Graphics.Cameras;
 using OpenTK;
+using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,32 +32,19 @@ namespace Messier.Testing.VoxTest
 
             v[1] = new VoxelTypeMap.VoxelTypeData()
             {
-                Color = Vector4.One,
+                Color = Vector4.UnitY * 0.7f + Vector4.UnitW,
                 Visible = true
             };
 
             v[2] = new VoxelTypeMap.VoxelTypeData()
             {
-                Color = Vector4.UnitX,
+                Color = Vector4.UnitX + Vector4.UnitW,
                 Visible = true
             };
 
-            Chunk c = new Chunk();
-            c.InitDataStore();
-            Chunk c0 = new Chunk();
-            c0.InitDataStore();
-
-            c.VoxelMap = v;
-            c.MaterialMap[0] = 0;
-            c.MaterialMap[1] = 1;
-            c.MaterialMap[2] = 2;
-
-            c0.VoxelMap = v;
-            c0.MaterialMap[0] = 0;
-            c0.MaterialMap[1] = 1;
-            c0.MaterialMap[2] = 2;
-
-            OpenSimplexNoise s = new OpenSimplexNoise(0);
+            BlockManager man = new BlockManager();
+            man.Side = 32;
+            man.VoxelTypes = v;
 
             //Rendering stuff
             ShaderProgram prog = null;
@@ -77,23 +65,6 @@ namespace Messier.Testing.VoxTest
 
                 v.UpdateBuffers();
                 GraphicsDevice.SetBufferTexture(0, v.ColorData);
-
-
-                for (int x = 0; x < c.Side; x++)
-                    for (int y = 0; y < c.Side; y++)
-                        for (int z = 0; z < c.Side; z++)
-                        {
-                            //c[x, y, z] = 1;
-                            //if (n++ == 1) c[x, y, z] = 1;
-                            //c[x, y, z] = (byte)((x + y + z) % 2);
-                            c[x, y, z] = (byte)(s.Evaluate(x / n, y / n, z / n) >= 0.5 ? 0 : rng.Next(1, 3));
-                            c0[x, y, z] = (byte)(s.Evaluate((x + c0.Side) / n, y / n, z / n) >= 0.5 ? 0 : rng.Next(1, 3));
-                        }
-
-                c.GenerateMesh();
-                c0.GenerateMesh();
-
-
 
                 ShaderSource vShader = ShaderSource.Load(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader, "Testing/VoxTest/vertex.glsl");
                 ShaderSource fShader = ShaderSource.Load(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader, "Testing/VoxTest/fragment.glsl");
@@ -121,27 +92,40 @@ namespace Messier.Testing.VoxTest
             GraphicsDevice.Render += (e) =>
             {
                 GraphicsDevice.Clear();
-                c.Bind();
-                prog.Set("World", World);
 
-                prog.Set("range1", c.NormalOffsets[1]);
-                prog.Set("range2", c.NormalOffsets[2]);
-                prog.Set("range3", c.NormalOffsets[3]);
-                prog.Set("range4", c.NormalOffsets[4]);
-                prog.Set("range5", c.NormalOffsets[5]);
-                GraphicsDevice.SetShaderProgram(prog);
-                GraphicsDevice.Draw(OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, 0, c.NormalGroupSizes[6]);
+                for (int k = -2; k < 0; k++)
+                {
+                    Vector3 a = new Vector3();
+                    a.Y = k * man.Side;
+                    for (int i = -5; i < 5; i++)
+                    {
+                        a.Z = i * man.Side;
+                        for (int j = -5; j < 5; j++)
+                        {
+                            a.X = j * man.Side;
+                            Vector3 dir = (context.Camera as FirstPersonCamera).Direction;
+                            if (Vector3.Dot(dir.Normalized(), a.Normalized()) >= -0.3)
+                            {
+                                Chunk c = man.Draw(context.Camera.Position + a, out World);
+                                if (c.ChunkReady)
+                                {
+                                    c.Bind();
+                                    prog.Set("World", World);
 
-                c0.Bind();
-                prog.Set("World", Matrix4.CreateTranslation(c0.Side * c0.Scale, 0, 0));
+                                    prog.Set("range1", c.NormalOffsets[1]);
+                                    prog.Set("range2", c.NormalOffsets[2]);
+                                    prog.Set("range3", c.NormalOffsets[3]);
+                                    prog.Set("range4", c.NormalOffsets[4]);
+                                    prog.Set("range5", c.NormalOffsets[5]);
+                                    GraphicsDevice.SetShaderProgram(prog);
 
-                prog.Set("range1", c0.NormalOffsets[1]);
-                prog.Set("range2", c0.NormalOffsets[2]);
-                prog.Set("range3", c0.NormalOffsets[3]);
-                prog.Set("range4", c0.NormalOffsets[4]);
-                prog.Set("range5", c0.NormalOffsets[5]);
-                GraphicsDevice.SetShaderProgram(prog);
-                GraphicsDevice.Draw(OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, 0, c0.NormalGroupSizes[6]);
+
+                                    GraphicsDevice.Draw(OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, 0, c.NormalGroupSizes[6]);
+                                }
+                            }
+                        }
+                    }
+                }
 
                 GraphicsDevice.SwapBuffers();
             };

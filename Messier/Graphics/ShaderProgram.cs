@@ -11,6 +11,7 @@ namespace Messier.Graphics
     public class ShaderProgram : IDisposable
     {
         internal int id;
+        private Dictionary<string, int> locs;
 
         public ShaderProgram(params ShaderSource[] shaders)
         {
@@ -42,6 +43,8 @@ namespace Messier.Graphics
                 GL.DetachShader(id, shaders[i].id);
             }
 
+
+            locs = new Dictionary<string, int>();
             GraphicsDevice.Cleanup += Dispose;
         }
 
@@ -60,25 +63,50 @@ namespace Messier.Graphics
 
         public void Set(string name, Vector3 vec)
         {
-            int loc = GL.GetProgramResourceLocation(id, ProgramInterface.Uniform, name);
+            int loc = 0;
+            if (!locs.ContainsKey(name))
+            {
+                loc = GL.GetProgramResourceLocation(id, ProgramInterface.Uniform, name);
+                locs[name] = loc;
+            }
+            else loc = locs[name];
+
             if (loc >= 0) GL.ProgramUniform3(id, loc, vec.X, vec.Y, vec.Z);
         }
 
         public void Set(string name, Vector4 vec)
         {
-            int loc = GL.GetProgramResourceLocation(id, ProgramInterface.Uniform, name);
+            int loc = 0;
+            if (!locs.ContainsKey(name))
+            {
+                loc = GL.GetProgramResourceLocation(id, ProgramInterface.Uniform, name);
+                locs[name] = loc;
+            }
+            else loc = locs[name];
             if (loc >= 0) GL.ProgramUniform4(id, loc, vec.X, vec.Y, vec.Z, vec.W);
         }
 
         public void Set(string name, Vector2 vec)
         {
-            int loc = GL.GetProgramResourceLocation(id, ProgramInterface.Uniform, name);
+            int loc = 0;
+            if (!locs.ContainsKey(name))
+            {
+                loc = GL.GetProgramResourceLocation(id, ProgramInterface.Uniform, name);
+                locs[name] = loc;
+            }
+            else loc = locs[name];
             if (loc >= 0) GL.ProgramUniform2(id, loc, vec.X, vec.Y);
         }
 
         public void Set(string name, Matrix4 vec)
         {
-            int loc = GL.GetProgramResourceLocation(id, ProgramInterface.Uniform, name);
+            int loc = 0;
+            if (!locs.ContainsKey(name))
+            {
+                loc = GL.GetProgramResourceLocation(id, ProgramInterface.Uniform, name);
+                locs[name] = loc;
+            }
+            else loc = locs[name];
             if (loc >= 0) GL.ProgramUniformMatrix4(id, loc, 1, false, new float[] { vec.M11, vec.M12, vec.M13, vec.M14,
                                                                                     vec.M21, vec.M22, vec.M23, vec.M24,
                                                                                     vec.M31, vec.M32, vec.M33, vec.M34,
@@ -87,13 +115,26 @@ namespace Messier.Graphics
 
         public void Set(string name, float val)
         {
-            int loc = GL.GetProgramResourceLocation(id, ProgramInterface.Uniform, name);
+            int loc = 0;
+            if (!locs.ContainsKey(name))
+            {
+                loc = GL.GetProgramResourceLocation(id, ProgramInterface.Uniform, name);
+                locs[name] = loc;
+            }
+            else loc = locs[name];
             if (loc >= 0) GL.ProgramUniform1(id, loc, val);
         }
 
         public void Set(string name, int index)
         {
-            int loc = GL.GetProgramResourceLocation(id, ProgramInterface.Uniform, name);
+            int loc = 0;
+            if (!locs.ContainsKey(name))
+            {
+                loc = GL.GetProgramResourceLocation(id, ProgramInterface.Uniform, name);
+                locs[name] = loc;
+            }
+            else loc = locs[name];
+
             if (loc >= 0) GL.ProgramUniform1(id, loc, index);
         }
 

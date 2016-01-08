@@ -213,6 +213,7 @@ namespace Messier.Graphics
 
         private static void Game_UpdateFrame(object sender, FrameEventArgs e)
         {
+            BufferStreamer.ExecuteTasks((long)(e.Time * 1000));
             Update?.Invoke(e.Time);
         }
 
@@ -308,9 +309,12 @@ namespace Messier.Graphics
 
         public static void Draw(PrimitiveType type, int first, int count)
         {
+            if (count == 0) return;
+
             if (curVarray == null) return;
             if (curProg == null) return;
             if (curFramebuffer == null) return;
+
 
             for (int i = 0; i < textures.Count; i++) GPUStateMachine.BindTexture(i, textures[i].texTarget, textures[i].id);
             for (int i = 0; i < feedbackBufs.Count; i++) GPUStateMachine.BindBuffer(BufferTarget.TransformFeedbackBuffer, feedbackBufs[i].Item1.id, i, (IntPtr)feedbackBufs[i].Item2, (IntPtr)feedbackBufs[i].Item3);

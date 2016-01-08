@@ -25,31 +25,33 @@ namespace Messier.Graphics
             addr = IntPtr.Zero;
         }
 
-        public GPUBuffer(BufferTarget target, long size, bool read)
+        public GPUBuffer(BufferTarget target, int size, bool read)
         {
             id = GL.GenBuffer();
             this.target = target;
 
+            this.size = size;
+
             GPUStateMachine.BindBuffer(target, id);
             GL.BufferStorage(target, (IntPtr)size, IntPtr.Zero, BufferStorageFlags.MapPersistentBit | BufferStorageFlags.MapCoherentBit | BufferStorageFlags.MapWriteBit | (read ? BufferStorageFlags.MapReadBit : 0));
 
-            addr = GL.MapBuffer(target, BufferAccess.WriteOnly | (BufferAccess)(read ? 1 : 0));
+            addr = GL.MapBufferRange(target, IntPtr.Zero, (IntPtr)size, BufferAccessMask.MapPersistentBit | BufferAccessMask.MapCoherentBit | BufferAccessMask.MapWriteBit | (read ? BufferAccessMask.MapReadBit : 0));
             GPUStateMachine.UnbindBuffer(target);
         }
 
         public void BufferData<T>(int offset, T[] data, BufferUsageHint hint) where T : struct
         {
-            if (data.Length < 1) throw new Exception("Buffer is empty!");
+            //if (data.Length < 1) throw new Exception("Buffer is empty!");
+            //if (data.Length == 0) return;
 
             dataLen = data.Length;
-            size = (Marshal.SizeOf(data[0]) * data.Length);
+
+            if (data.Length != 0) size = (Marshal.SizeOf(data[0]) * data.Length);
 
             if (addr == IntPtr.Zero)
             {
                 GPUStateMachine.BindBuffer(target, id);
 
-                dataLen = data.Length;
-                size = (Marshal.SizeOf(data[0]) * data.Length);
                 GL.BufferData(target, (IntPtr)size, data, hint);
 
                 GPUStateMachine.UnbindBuffer(target);
@@ -81,8 +83,15 @@ namespace Messier.Graphics
                 if (addr != IntPtr.Zero)
                 {
                     addr = IntPtr.Zero;
-                    GPUStateMachine.BindBuffer(target, id);
-                    GL.UnmapBuffer(target);
+                    try
+                    {
+                        GL.BindBuffer(target, id);
+                        GL.UnmapBuffer(target);
+                    }
+                    catch (Exception)
+                    {
+
+                    }
                 }
                 GL.DeleteBuffer(id);
                 id = 0;

@@ -79,10 +79,11 @@ float snoiseFractal(vec3 m) {
 
 void main()
 {
+	vec4 materialInfo = texelFetch(materialColors, int(material));
+
 	Color.rgb = normalize((World * vec4(normal_in, 0)).xyz);
-	Color.rgb = texelFetch(materialColors, int(material)).rgb;
-	Color.rgb *= max(dot(lightDir, Color.rgb), 0);
+	Color.rgb = materialInfo.rgb * max(dot(lightDir, Color.rgb), 0);
 	//if(material == 1)Color.rgb = vec3(1);
-	Color.a = 1;
+	Color.a = materialInfo.a;
 	gl_FragDepth = log2(flogz) * Fcoef * 0.5;
 }

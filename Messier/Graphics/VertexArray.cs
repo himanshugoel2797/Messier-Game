@@ -24,10 +24,9 @@ namespace Messier.Graphics
             GL.EnableVertexAttribArray(index);
             GPUStateMachine.BindBuffer(buffer.target, buffer.id);
             GL.VertexAttribPointer(index, elementCount, type, false, 0, 0);
+            GPUStateMachine.UnbindBuffer(buffer.target);
 
             GPUStateMachine.UnbindVertexArray();
-
-            //GPUStateMachine.UnbindBuffer(buffer.target);
         }
 
         #region IDisposable Support
