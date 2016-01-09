@@ -33,9 +33,9 @@ namespace Messier.Graphics
             this.size = size;
 
             GPUStateMachine.BindBuffer(target, id);
-            GL.BufferStorage(target, (IntPtr)size, IntPtr.Zero, BufferStorageFlags.MapPersistentBit | BufferStorageFlags.MapCoherentBit | BufferStorageFlags.MapWriteBit | (read ? BufferStorageFlags.MapReadBit : 0));
+            GL.BufferStorage(target, (IntPtr)size, IntPtr.Zero, BufferStorageFlags.MapPersistentBit | BufferStorageFlags.MapWriteBit | (read ? BufferStorageFlags.MapReadBit : 0));
 
-            addr = GL.MapBufferRange(target, IntPtr.Zero, (IntPtr)size, BufferAccessMask.MapPersistentBit | BufferAccessMask.MapCoherentBit | BufferAccessMask.MapWriteBit | (read ? BufferAccessMask.MapReadBit : 0));
+            addr = GL.MapBufferRange(target, IntPtr.Zero, (IntPtr)size, BufferAccessMask.MapPersistentBit | BufferAccessMask.MapUnsynchronizedBit | BufferAccessMask.MapFlushExplicitBit | BufferAccessMask.MapWriteBit | (read ? BufferAccessMask.MapReadBit : 0));
             GPUStateMachine.UnbindBuffer(target);
         }
 
@@ -66,6 +66,33 @@ namespace Messier.Graphics
         {
             return addr;
         }
+
+        public static void FlushAll()
+        {
+            GL.MemoryBarrier(MemoryBarrierFlags.ClientMappedBufferBarrierBit);
+        }
+
+        public void UnMapBuffer()
+        {
+            GPUStateMachine.BindBuffer(target, id);
+            GL.UnmapBuffer(target);
+            GPUStateMachine.UnbindBuffer(target);
+        }
+
+        public void MapBuffer(bool read)
+        {
+            GPUStateMachine.BindBuffer(target, id);
+            addr = GL.MapBufferRange(target, IntPtr.Zero, (IntPtr)size, BufferAccessMask.MapPersistentBit | BufferAccessMask.MapUnsynchronizedBit | BufferAccessMask.MapFlushExplicitBit | BufferAccessMask.MapInvalidateBufferBit | BufferAccessMask.MapWriteBit | (read ? BufferAccessMask.MapReadBit : 0));
+            GPUStateMachine.UnbindBuffer(target);
+        }
+
+        public void MapBuffer(bool read, int offset, int size)
+        {
+            GPUStateMachine.BindBuffer(target, id);
+            addr = GL.MapBufferRange(target, (IntPtr)offset, (IntPtr)size, BufferAccessMask.MapPersistentBit | BufferAccessMask.MapUnsynchronizedBit | BufferAccessMask.MapFlushExplicitBit | BufferAccessMask.MapInvalidateBufferBit | BufferAccessMask.MapWriteBit | (read ? BufferAccessMask.MapReadBit : 0));
+            GPUStateMachine.UnbindBuffer(target);
+        }
+
 
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
@@ -105,7 +132,7 @@ namespace Messier.Graphics
         ~GPUBuffer()
         {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(false);
+            //Dispose(false);
         }
 
         // This code added to correctly implement the disposable pattern.

@@ -97,10 +97,10 @@ namespace Messier.Testing.VoxTest
                 {
                     Vector3 a = new Vector3();
                     a.Y = k * man.Side;
-                    for (int i = -5; i < 5; i++)
+                    for (int i = -10; i <= 10; i++)
                     {
                         a.Z = i * man.Side;
-                        for (int j = -5; j < 5; j++)
+                        for (int j = -10; j <= 10; j++)
                         {
                             a.X = j * man.Side;
                             Vector3 dir = (context.Camera as FirstPersonCamera).Direction;
