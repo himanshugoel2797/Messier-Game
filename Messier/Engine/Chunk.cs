@@ -74,6 +74,26 @@ namespace Messier.Engine
 
         }
 
+        public void InitBuffers()
+        {
+            BufferStreamer.QueueTask((a) =>
+            {
+                if (vArray == null) vArray = new VertexArray();
+
+                if (vBuf != null) vBuf.Dispose();
+                vBuf = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ArrayBuffer, Side * Side * Side * 16, false);
+                //vBuf = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ArrayBuffer);
+                //vBuf.BufferData(0, vertex.ToArray(), OpenTK.Graphics.OpenGL4.BufferUsageHint.StaticDraw);
+                vArray.SetBufferObject(0, vBuf, 4, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Int2101010Rev);
+
+                if (vMat != null) vMat.Dispose();
+                vMat = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ArrayBuffer, Side * Side * Side * 8, false);
+                //vMat = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ArrayBuffer);
+                //vMat.BufferData(0, mat.ToArray(), OpenTK.Graphics.OpenGL4.BufferUsageHint.StaticDraw);
+                vArray.SetBufferObject(1, vMat, 1, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Short);
+            }, null);
+        }
+
         public byte this[int x, int y, int z]
         {
             get
@@ -565,7 +585,7 @@ namespace Messier.Engine
             }, null);
             */
             #endregion
-            
+
 
             #region Advanced Greedy Mesher
             ChunkReady = false;
@@ -759,36 +779,23 @@ namespace Messier.Engine
             }
 
 
-            BufferStreamer.QueueTask((a) =>
-            {
-                if (vArray == null) vArray = new VertexArray();
 
-                if (vBuf != null) vBuf.Dispose();
-                vBuf = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ArrayBuffer, 150 * 1024, false);
-                //vBuf = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ArrayBuffer);
-                //vBuf.BufferData(0, vertex.ToArray(), OpenTK.Graphics.OpenGL4.BufferUsageHint.StaticDraw);
-                vArray.SetBufferObject(0, vBuf, 4, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Int2101010Rev);
+            ThreadPool.QueueUserWorkItem(new WaitCallback((a0) =>
+           {
+               while (vBuf == null | vMat == null) Thread.Yield();
 
-                if (vMat != null) vMat.Dispose();
-                vMat = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ArrayBuffer, 70 * 1024, false);
-                //vMat = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ArrayBuffer);
-                //vMat.BufferData(0, mat.ToArray(), OpenTK.Graphics.OpenGL4.BufferUsageHint.StaticDraw);
-                vArray.SetBufferObject(1, vMat, 1, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Short);
 
-                ThreadPool.QueueUserWorkItem(new WaitCallback((a0) =>
+               Marshal.Copy(vertex.ToArray(), 0, vBuf.GetPtr(), vertex.Count);
+               Marshal.Copy(mat.ToArray(), 0, vMat.GetPtr(), mat.Count);
+
+               BufferStreamer.QueueTask((a1) =>
                {
-                   Marshal.Copy(vertex.ToArray(), 0, vBuf.GetPtr(), vertex.Count);
-                   Marshal.Copy(mat.ToArray(), 0, vMat.GetPtr(), mat.Count);
-
-                   BufferStreamer.QueueTask((a1) =>
-                   {
-                       //GPUBuffer.FlushAll();
-                       vMat.UnMapBuffer();
-                       vBuf.UnMapBuffer();
-                       ChunkReady = true;
-                   }, null);
-               }));
-            }, null);
+                   //GPUBuffer.FlushAll();
+                   vMat.UnMapBuffer();
+                   vBuf.UnMapBuffer();
+                   ChunkReady = true;
+               }, null);
+           }));
             #endregion
 
             #region Greedy Mesher

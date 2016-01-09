@@ -16,7 +16,7 @@ namespace Messier.Engine
         Dictionary<Vector3, Chunk> chunks;
         OpenSimplexNoise s;
 
-        public int Side { get; set; } = 64;
+        public int Side { get; set; } = 32;
         public VoxelTypeMap VoxelTypes { get; set; }
 
         public BlockManager()
@@ -45,8 +45,9 @@ namespace Messier.Engine
                 ThreadPool.QueueUserWorkItem(new WaitCallback((a) =>
                 {
                     //Generate the mesh
-                    chunks[pos].InitDataStore();
                     chunks[pos].Side = Side;
+                    chunks[pos].InitDataStore();
+                    chunks[pos].InitBuffers();
                     chunks[pos].VoxelMap = VoxelTypes;
 
                     for (int i = 0; i < Math.Min(chunks[pos].MaterialMap.Length, VoxelTypes.Voxels.Count); i++)
