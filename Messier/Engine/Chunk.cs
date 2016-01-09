@@ -64,34 +64,11 @@ namespace Messier.Engine
             internal set;
         } = false;
 
-        internal VertexArray vArray;
-        internal GPUBuffer vBuf, vMat;
-
         public void InitDataStore()
         {
             Data = new uint[Side, Side, Side / VoxelsPerInt];
             MaterialMap = new int[(1 << (BitPerVoxel - 1)) + 1];
 
-        }
-
-        public void InitBuffers()
-        {
-            BufferStreamer.QueueTask((a) =>
-            {
-                if (vArray == null) vArray = new VertexArray();
-
-                if (vBuf != null) vBuf.Dispose();
-                vBuf = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ArrayBuffer, Side * Side * Side * 16, false);
-                //vBuf = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ArrayBuffer);
-                //vBuf.BufferData(0, vertex.ToArray(), OpenTK.Graphics.OpenGL4.BufferUsageHint.StaticDraw);
-                vArray.SetBufferObject(0, vBuf, 4, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Int2101010Rev);
-
-                if (vMat != null) vMat.Dispose();
-                vMat = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ArrayBuffer, Side * Side * Side * 8, false);
-                //vMat = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ArrayBuffer);
-                //vMat.BufferData(0, mat.ToArray(), OpenTK.Graphics.OpenGL4.BufferUsageHint.StaticDraw);
-                vArray.SetBufferObject(1, vMat, 1, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Short);
-            }, null);
         }
 
         public byte this[int x, int y, int z]
@@ -120,6 +97,9 @@ namespace Messier.Engine
                 this[(int)a.X, (int)a.Y, (int)a.Z] = value;
             }
         }
+
+        internal List<short>[] Materials;
+        internal List<int>[] Vertices;
 
         private int curMaterial = 0;
         private bool data(int x, int y, int z)
@@ -762,6 +742,7 @@ namespace Messier.Engine
 
                 }
             }   //d loop
+            #endregion
 
 
             NormalOffsets = new int[6];
@@ -778,25 +759,10 @@ namespace Messier.Engine
                 mat.AddRange(rM[i]);
             }
 
+            this.Materials = rM;
+            this.Vertices = rV;
 
-
-            ThreadPool.QueueUserWorkItem(new WaitCallback((a0) =>
-           {
-               while (vBuf == null | vMat == null) Thread.Yield();
-
-
-               Marshal.Copy(vertex.ToArray(), 0, vBuf.GetPtr(), vertex.Count);
-               Marshal.Copy(mat.ToArray(), 0, vMat.GetPtr(), mat.Count);
-
-               BufferStreamer.QueueTask((a1) =>
-               {
-                   //GPUBuffer.FlushAll();
-                   vMat.UnMapBuffer();
-                   vBuf.UnMapBuffer();
-                   ChunkReady = true;
-               }, null);
-           }));
-            #endregion
+            ChunkReady = true;
 
             #region Greedy Mesher
             /*
@@ -1026,12 +992,6 @@ namespace Messier.Engine
             */
 
             #endregion
-        }
-
-
-        public void Bind()
-        {
-            GraphicsDevice.SetVertexArray(vArray);
         }
     }
 }

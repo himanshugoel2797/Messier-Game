@@ -25,7 +25,7 @@ namespace Messier.Graphics
             addr = IntPtr.Zero;
         }
 
-        public GPUBuffer(BufferTarget target, int size, bool read)
+        public GPUBuffer(BufferTarget target, int size, BufferUsageHint hint)
         {
             id = GL.GenBuffer();
             this.target = target;
@@ -33,9 +33,16 @@ namespace Messier.Graphics
             this.size = size;
 
             GPUStateMachine.BindBuffer(target, id);
-            GL.BufferStorage(target, (IntPtr)size, IntPtr.Zero, BufferStorageFlags.MapPersistentBit | BufferStorageFlags.MapWriteBit | (read ? BufferStorageFlags.MapReadBit : 0));
+            GL.BufferData(target, (IntPtr)size, IntPtr.Zero, hint);
+            GPUStateMachine.UnbindBuffer(target);
+        }
 
-            addr = GL.MapBufferRange(target, IntPtr.Zero, (IntPtr)size, BufferAccessMask.MapPersistentBit | BufferAccessMask.MapUnsynchronizedBit | BufferAccessMask.MapInvalidateBufferBit | BufferAccessMask.MapFlushExplicitBit | BufferAccessMask.MapWriteBit | (read ? BufferAccessMask.MapReadBit : 0));
+        public void OrphanBuffer(int size, BufferUsageHint hint)
+        {
+            this.size = size;
+
+            GPUStateMachine.BindBuffer(target, id);
+            GL.BufferData(target, (IntPtr)size, IntPtr.Zero, hint);
             GPUStateMachine.UnbindBuffer(target);
         }
 

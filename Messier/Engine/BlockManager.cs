@@ -19,10 +19,23 @@ namespace Messier.Engine
         public int Side { get; set; } = 32;
         public VoxelTypeMap VoxelTypes { get; set; }
 
+        public const int Size = 1024 * 1024;
+        public VertexArray vArray;
+
+        private GPUBufferStream vertices, materials;
+
+
         public BlockManager()
         {
             chunks = new Dictionary<Vector3, Chunk>();
             s = new OpenSimplexNoise(0);
+
+            vArray = new VertexArray();
+            vertices = new GPUBufferStream(8 * 1024 * 1024, 4);
+            materials = new GPUBufferStream(4 * 1024 * 1024, 4);
+
+            vArray.SetBufferObject(0, vertices.GetBuffer(), 4, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Int2101010Rev);
+            vArray.SetBufferObject(1, materials.GetBuffer(), 1, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Short);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -47,7 +60,6 @@ namespace Messier.Engine
                     //Generate the mesh
                     chunks[pos].Side = Side;
                     chunks[pos].InitDataStore();
-                    chunks[pos].InitBuffers();
                     chunks[pos].VoxelMap = VoxelTypes;
 
                     for (int i = 0; i < Math.Min(chunks[pos].MaterialMap.Length, VoxelTypes.Voxels.Count); i++)
@@ -81,12 +93,17 @@ namespace Messier.Engine
             return chunks[pos];
         }
 
-        public Chunk Draw(Vector3 EyePos, out Matrix4 pos)
+        struct drawData
+        {
+            public Chunk c;
+        }
+
+        public void Draw(Vector3 EyePos, ShaderProgram prog)
         {
             //Attempt to access the chunk right underneath
-            pos = Matrix4.CreateTranslation(CorrectVector(EyePos) - Vector3.One * Side / 2);
-            return GetChunk(EyePos);
+            Matrix4 pos = Matrix4.CreateTranslation(CorrectVector(EyePos) - Vector3.One * Side / 2);
 
+            //Get the blocks around (circle) and in our field of view to draw, take their geometry data and push it into the current buffers, then issue the draw call
 
         }
     }

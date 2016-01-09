@@ -82,6 +82,8 @@
   <ItemGroup>
     <Compile Include="Engine\BlockManager.cs" />
     <Compile Include="Engine\BoundingBox.cs" />
+    <Compile Include="Engine\ChunkBatcher.cs" />
+    <Compile Include="Engine\GPUBufferStream.cs" />
     <Compile Include="Engine\SceneGraph\EngineObject.cs" />
     <Compile Include="Engine\SceneGraph\ObjectBatch.cs" />
     <Compile Include="Engine\Chunk.cs" />
