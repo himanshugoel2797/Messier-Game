@@ -62,6 +62,30 @@ namespace Messier.Graphics
             }
         }
 
+        public void OrphanData(int size, BufferUsageHint hint)
+        {
+            GPUStateMachine.BindBuffer(target, id);
+            GL.BufferData(target, (IntPtr)size, IntPtr.Zero, hint);
+            GPUStateMachine.UnbindBuffer(target);
+        }
+
+        public void BufferSubData<T>(int offset, T[] data, int elementCount) where T : struct
+        {
+            if (elementCount == 0 | data.Length == 0) return;
+            if (addr == IntPtr.Zero)
+            {
+                GPUStateMachine.BindBuffer(target, id);
+
+                GL.BufferSubData(target, (IntPtr)(Marshal.SizeOf(data[0]) * offset), (IntPtr)(Marshal.SizeOf(data[0]) * elementCount), data);
+
+                GPUStateMachine.UnbindBuffer(target);
+            }
+            else
+            {
+                throw new Exception("This buffer is mapped!");
+            }
+        }
+
         public IntPtr GetPtr()
         {
             return addr;

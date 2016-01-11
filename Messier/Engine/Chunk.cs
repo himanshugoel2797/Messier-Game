@@ -119,6 +119,17 @@ namespace Messier.Engine
             return this[a];
         }
 
+        private int packVerts(float x, float y, float z, int uv)
+        {
+            byte x0 = (byte)((int)x & ((1 << 10) - 1));
+            byte y0 = (byte)((int)y & ((1 << 10) - 1));
+            byte z0 = (byte)((int)z & ((1 << 10) - 1));
+
+            int packed = x0 | (y0 << 10) | (z0 << 20) | (uv & 3) << 30;
+
+            return packed;
+        }
+
         public void GenerateMesh()
         {
             #region Naive Mesher
@@ -331,16 +342,7 @@ namespace Messier.Engine
             */
             #endregion
 
-            Func<float, float, float, int> packVerts = (x, y, z) =>
-            {
-                byte x0 = (byte)((int)x & ((1 << 10) - 1));
-                byte y0 = (byte)((int)y & ((1 << 10) - 1));
-                byte z0 = (byte)((int)z & ((1 << 10) - 1));
 
-                int packed = x0 | (y0 << 10) | (z0 << 20);
-
-                return packed;
-            };
             #region Naive Mesher Asynchronous
             /*
             ChunkReady = false;
@@ -582,6 +584,9 @@ namespace Messier.Engine
                 if (VoxelMap[MaterialMap[i]].Visible && !ValidMats.Contains((short)MaterialMap[i])) ValidMats.Add((short)MaterialMap[i]);
             }
 
+            bool[] mask2 = new bool[Side];
+            bool[,] mask = new bool[Side, Side];
+
             for (int m = 0; m < ValidMats.Count; m++)
             {
                 for (int d = 0; d < 3; d++)
@@ -600,9 +605,6 @@ namespace Messier.Engine
                     {
                         norm = Vector3.Zero;
                         norm[d] = 1;
-
-                        bool[] mask2 = new bool[Side];
-                        bool[,] mask = new bool[Side, Side];
 
                         for (x[u] = 0; x[u] < Side; x[u]++)
                         {
@@ -701,21 +703,21 @@ namespace Messier.Engine
 
                                 if (normIndex <= 2)
                                 {
-                                    rV[normIndex].Add(packVerts(tR.X, tR.Y, tR.Z));
-                                    rV[normIndex].Add(packVerts(tL.X, tL.Y, tL.Z));
-                                    rV[normIndex].Add(packVerts(bL.X, bL.Y, bL.Z));
-                                    rV[normIndex].Add(packVerts(bL.X, bL.Y, bL.Z));
-                                    rV[normIndex].Add(packVerts(bR.X, bR.Y, bR.Z));
-                                    rV[normIndex].Add(packVerts(tR.X, tR.Y, tR.Z));
+                                    rV[normIndex].Add(packVerts(tR.X, tR.Y, tR.Z, 0));
+                                    rV[normIndex].Add(packVerts(tL.X, tL.Y, tL.Z, 1));
+                                    rV[normIndex].Add(packVerts(bL.X, bL.Y, bL.Z, 2));
+                                    rV[normIndex].Add(packVerts(bL.X, bL.Y, bL.Z, 2));
+                                    rV[normIndex].Add(packVerts(bR.X, bR.Y, bR.Z, 3));
+                                    rV[normIndex].Add(packVerts(tR.X, tR.Y, tR.Z, 0));
                                 }
                                 else
                                 {
-                                    rV[normIndex].Add(packVerts(tL.X, tL.Y, tL.Z));
-                                    rV[normIndex].Add(packVerts(tR.X, tR.Y, tR.Z));
-                                    rV[normIndex].Add(packVerts(bL.X, bL.Y, bL.Z));
-                                    rV[normIndex].Add(packVerts(bL.X, bL.Y, bL.Z));
-                                    rV[normIndex].Add(packVerts(tR.X, tR.Y, tR.Z));
-                                    rV[normIndex].Add(packVerts(bR.X, bR.Y, bR.Z));
+                                    rV[normIndex].Add(packVerts(tL.X, tL.Y, tL.Z, 0));
+                                    rV[normIndex].Add(packVerts(tR.X, tR.Y, tR.Z, 1));
+                                    rV[normIndex].Add(packVerts(bL.X, bL.Y, bL.Z, 2));
+                                    rV[normIndex].Add(packVerts(bL.X, bL.Y, bL.Z, 2));
+                                    rV[normIndex].Add(packVerts(tR.X, tR.Y, tR.Z, 3));
+                                    rV[normIndex].Add(packVerts(bR.X, bR.Y, bR.Z, 0));
                                 }
 
                                 rM[normIndex].Add(ValidMats[m]);
@@ -758,15 +760,29 @@ namespace Messier.Engine
 
             BufferStreamer.QueueTask((a) =>
             {
-                vArray = new VertexArray();
-                vBuf = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ArrayBuffer);
-                vBuf.BufferData(0, vertex.ToArray(), OpenTK.Graphics.OpenGL4.BufferUsageHint.StaticDraw);
-                vArray.SetBufferObject(0, vBuf, 4, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Int2101010Rev);
+                if (vArray == null) vArray = new VertexArray();
+                if (vBuf == null)
+                {
+                    vBuf = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ArrayBuffer);
+                    vArray.SetBufferObject(0, vBuf, 4, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Int2101010Rev);
+                }
 
-                vMat = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ArrayBuffer);
-                vMat.BufferData(0, mat.ToArray(), OpenTK.Graphics.OpenGL4.BufferUsageHint.StaticDraw);
-                vArray.SetBufferObject(1, vMat, 1, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Short);
-                ChunkReady = true;
+                if (vMat == null)
+                {
+                    vMat = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ArrayBuffer);
+                    vArray.SetBufferObject(1, vMat, 1, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Short);
+                }
+
+                vBuf.OrphanData(vertex.Count * 4, OpenTK.Graphics.OpenGL4.BufferUsageHint.StaticDraw);
+                vMat.OrphanData(mat.Count * 2, OpenTK.Graphics.OpenGL4.BufferUsageHint.StaticDraw);
+
+                BufferStreamer.QueueTask((b) =>
+                {
+                    vBuf.BufferSubData(0, vertex.ToArray(), vertex.Count);
+                    vMat.BufferSubData(0, mat.ToArray(), mat.Count);
+                }, null);
+
+                BufferStreamer.QueueTask((c) => ChunkReady = true, null);
             }, null);
             #endregion
 

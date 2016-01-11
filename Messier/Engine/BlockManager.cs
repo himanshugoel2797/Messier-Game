@@ -16,7 +16,7 @@ namespace Messier.Engine
         Dictionary<Vector3, Chunk> chunks;
         OpenSimplexNoise s;
 
-        public int Side { get; set; } = 32;
+        public int Side { get; set; } = 64;
         public VoxelTypeMap VoxelTypes { get; set; }
 
         public BlockManager()
@@ -52,7 +52,7 @@ namespace Messier.Engine
                     chunks[pos].MaterialMap[i] = i;
                 }
 
-                //ThreadPool.QueueUserWorkItem(new WaitCallback((a) =>
+                ThreadPool.QueueUserWorkItem(new WaitCallback((a) =>
                 {
                     Vector3 p0 = pos - Vector3.One * Side / 2;
 
@@ -70,12 +70,17 @@ namespace Messier.Engine
                             for (int z = 0; z < height; z++)
                             {
                                 chunks[pos][x, z, y] = 1;
-                                chunks[pos][x, z, y] = (byte)(s.Evaluate((x + p0.X) / n, (z + p0.Z) / n, (y + p0.Y) / n) <= 0.5 ? chunks[pos][x, z, y] : 0);
                             }
                         }
+
+                    for (int x = 0; x < Side; x++)
+                        for (int y = 0; y < Side; y++)
+                            for (int z = 0; z < Side; z++)
+                                chunks[pos][x, y, z] = (byte)(s.Evaluate((x + p0.X) / n, (y + p0.Y - 10) / n, (z + p0.Z) / n) <= 0.5 ? chunks[pos][x, y, z] : 0);
+
                     chunks[pos].GenerateMesh();
                 }
-                //));
+                ));
             }
             return chunks[pos];
         }

@@ -10,9 +10,9 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Messier.Testing.VoxTest
+namespace Messier.Testing.SmoothVoxTest
 {
-    public class VoxelTest
+    public class SmoothVoxelTest
     {
         public static void Run()
         {
@@ -42,40 +42,12 @@ namespace Messier.Testing.VoxTest
                 Visible = true
             };
 
-            DualVoxelChunk c = new DualVoxelChunk();
-            c.Side = 128;
-            OpenSimplexNoise snoise = new OpenSimplexNoise();
-
-            Func<float, float, float, float> f = (x, y, z) =>
-            {
-                //if (x == 0 | y == 0 | z == 0 | x == c.Side - 1 | y == c.Side - 1 | z == c.Side - 1) return 0;
-                //else return 1;
-                float n = 16;
-
-
-                float no = (float)(snoise.Evaluate(x / n, z / n));// * snoise.Evaluate((x * 2) / n, (z * 2) / n));
-
-                float w = Math.Max(Math.Min(y - 2, 1), 0);
-                //return (1 - w) * (y - 3f) + (w) * (y - no * 8);
-
-                x -= c.Side / (2);
-                y -= c.Side / (2);
-                z -= c.Side / (2);
-
-                x /= n;
-                y /= n;
-                z /= n;
-
-                return (float)(x * x + y * y + z * z - 4.0f);
-                //return (float)(Math.Sin(x) + Math.Sin(y) + Math.Sin(z));
-            };
-
-            c.InitDataStore(f);
+            BlockManager man = new BlockManager();
+            man.Side = 32;
+            man.VoxelTypes = v;
 
             //Rendering stuff
             ShaderProgram prog = null;
-            VertexArray vArray = null;
-            GPUBuffer verts = null, indices = null, normsB = null;
 
             GraphicsDevice.Load += () =>
             {
@@ -100,24 +72,6 @@ namespace Messier.Testing.VoxTest
                 prog = new ShaderProgram(vShader, fShader);
                 prog.Set("materialColors", 0);
 
-
-                float[] tmpV, norm;
-                int[] inds;
-                c.GenerateMesh(f, out tmpV, out inds, out norm);
-
-                verts = new GPUBuffer(BufferTarget.ArrayBuffer);
-                verts.BufferData(0, tmpV, BufferUsageHint.StaticDraw);
-
-                indices = new GPUBuffer(BufferTarget.ElementArrayBuffer);
-                indices.BufferData(0, inds, BufferUsageHint.StaticDraw);
-
-                normsB = new GPUBuffer(BufferTarget.ArrayBuffer);
-                normsB.BufferData(0, norm, BufferUsageHint.StaticDraw);
-
-                vArray = new VertexArray();
-                vArray.SetBufferObject(0, verts, 4, VertexAttribPointerType.Float);
-                vArray.SetBufferObject(1, normsB, 4, VertexAttribPointerType.Float);
-
             };
 
             GraphicsDevice.Update += (e) =>
@@ -139,10 +93,41 @@ namespace Messier.Testing.VoxTest
             {
                 GraphicsDevice.Clear();
 
-                GraphicsDevice.SetShaderProgram(prog);
-                GraphicsDevice.SetVertexArray(vArray);
-                GraphicsDevice.SetIndexBuffer(indices);
-                GraphicsDevice.Draw(PrimitiveType.Triangles, 0, indices.dataLen);
+                for (int k = 3; k >= -3; k--)
+                {
+                    Vector3 a = new Vector3();
+                    a.Y = k * man.Side;
+                    for (int i = -5; i < 5; i++)
+                    {
+                        a.Z = i * man.Side;
+                        for (int j = -5; j < 5; j++)
+                        {
+                            a.X = j * man.Side;
+                            Vector3 dir = (context.Camera as FirstPersonCamera).Direction;
+                            if (Vector3.Dot(dir.Normalized(), a.Normalized()) >= -0.3)
+                            {
+                                //Chunk c = man.Draw(-Vector3.UnitY * 123, out World);
+                                Chunk c = man.Draw( a, out World);
+                                if (c.ChunkReady)
+                                {
+                                    c.Bind();
+                                    prog.Set("World", World);
+
+                                    prog.Set("range1", c.NormalOffsets[1]);
+                                    prog.Set("range2", c.NormalOffsets[2]);
+                                    prog.Set("range3", c.NormalOffsets[3]);
+                                    prog.Set("range4", c.NormalOffsets[4]);
+                                    prog.Set("range5", c.NormalOffsets[5]);
+                                    GraphicsDevice.SetShaderProgram(prog);
+
+
+                                    GraphicsDevice.Draw(OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, 0, c.NormalGroupSizes[6]);
+                                }
+                            }
+                        }
+                    }
+                }
+
                 GraphicsDevice.SwapBuffers();
             };
 

@@ -179,7 +179,7 @@ namespace Messier.Graphics
         static GraphicsDevice()
         {
             game = new GameWindow((int)(16f / 9f * 540), 540);
-            game.VSync = VSyncMode.Off;
+            //game.VSync = VSyncMode.Off;
             game.Resize += Window_Resize;
             game.Load += Game_Load;
             game.RenderFrame += Game_RenderFrame;
@@ -213,13 +213,13 @@ namespace Messier.Graphics
 
         private static void Game_UpdateFrame(object sender, FrameEventArgs e)
         {
-            BufferStreamer.ExecuteTasks((long)(e.Time * 1000));
             Update?.Invoke(e.Time);
         }
 
         private static void Game_RenderFrame(object sender, FrameEventArgs e)
         {
             Render?.Invoke(e.Time);
+            BufferStreamer.ExecuteTasks((long)(e.Time * 1000));
         }
 
         private static void Game_Load(object sender, EventArgs e)

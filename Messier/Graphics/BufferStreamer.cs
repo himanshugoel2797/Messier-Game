@@ -23,7 +23,8 @@ namespace Messier.Graphics
 
         internal static void ExecuteTasks(long time)
         {
-            while (taskQ.Count > 0)
+            Stopwatch s = Stopwatch.StartNew();
+            while (taskQ.Count > 0 && s.ElapsedMilliseconds + time < 35)
             {
                 Tuple<Action<object>, object> tmp;
                 if (taskQ.TryDequeue(out tmp))

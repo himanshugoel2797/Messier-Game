@@ -82,6 +82,7 @@
   <ItemGroup>
     <Compile Include="Engine\BlockManager.cs" />
     <Compile Include="Engine\BoundingBox.cs" />
+    <Compile Include="Engine\DualVoxelChunk.cs" />
     <Compile Include="Engine\SceneGraph\EngineObject.cs" />
     <Compile Include="Engine\SceneGraph\ObjectBatch.cs" />
     <Compile Include="Engine\Chunk.cs" />
@@ -116,6 +117,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PUG\RNG.cs" />
     <Compile Include="Testing\TG_A\TerrainGenerationTestA.cs" />
+    <Compile Include="Testing\SmoothVoxTest\VoxelTest.cs" />
     <Compile Include="Testing\VoxTest\VoxelTest.cs" />
     <Compile Include="Voxel\Camera.cs" />
     <Compile Include="Voxel\IVoxelizer.cs" />
@@ -171,6 +173,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Testing\TG_A\vertex.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Testing\SmoothVoxTest\fragment.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Testing\SmoothVoxTest\vertex.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Testing\VoxTest\fragment.glsl">
