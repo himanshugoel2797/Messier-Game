@@ -66,8 +66,8 @@ namespace Messier.Testing.SmoothVoxTest
                 v.UpdateBuffers();
                 GraphicsDevice.SetBufferTexture(0, v.ColorData);
 
-                ShaderSource vShader = ShaderSource.Load(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader, "Testing/VoxTest/vertex.glsl");
-                ShaderSource fShader = ShaderSource.Load(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader, "Testing/VoxTest/fragment.glsl");
+                ShaderSource vShader = ShaderSource.Load(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader, "Testing/SmoothVoxTest/vertex.glsl");
+                ShaderSource fShader = ShaderSource.Load(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader, "Testing/SmoothVoxTest/fragment.glsl");
 
                 prog = new ShaderProgram(vShader, fShader);
                 prog.Set("materialColors", 0);
@@ -79,13 +79,18 @@ namespace Messier.Testing.SmoothVoxTest
                 context.Update(e);
 
                 //World *= Matrix4.CreateRotationY(0.01f);
+                Matrix4 tmp;
+                Chunk c = man.Draw(context.Camera.Position, out tmp);
+                if (c[context.Camera.Position] != 0) context.Camera.Position -= (context.Camera as FirstPersonCamera).Direction;
 
                 prog.Set("World", Matrix4.Identity);
                 prog.Set("View", context.View);
                 prog.Set("Proj", context.Projection);
                 prog.Set("Fcoef", (float)(2.0f / Math.Log(1000001) / Math.Log(2)));
-                prog.Set("lightDir", new Vector3(5, 10, 5).Normalized());
-
+                prog.Set("lightDir", new Vector3(-0.33f, -0.33f, -0.33f).Normalized());
+                prog.Set("lightColor", Vector3.One);
+                prog.Set("eyePos", context.Camera.Position);
+                prog.Set("eyeDir", (context.Camera as FirstPersonCamera).Direction);
             };
 
 
@@ -107,7 +112,7 @@ namespace Messier.Testing.SmoothVoxTest
                             if (Vector3.Dot(dir.Normalized(), a.Normalized()) >= -0.3)
                             {
                                 //Chunk c = man.Draw(-Vector3.UnitY * 123, out World);
-                                Chunk c = man.Draw( a, out World);
+                                Chunk c = man.Draw(a + context.Camera.Position, out World);
                                 if (c.ChunkReady)
                                 {
                                     c.Bind();

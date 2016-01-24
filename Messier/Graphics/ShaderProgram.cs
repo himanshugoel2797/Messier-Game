@@ -26,6 +26,7 @@ namespace Messier.Graphics
 
             int status = 0;
             GL.GetProgram(id, GetProgramParameterName.LinkStatus, out status);
+            GL.ValidateProgram(id);
             if (status == 0)
             {
                 //Retrieve the errors

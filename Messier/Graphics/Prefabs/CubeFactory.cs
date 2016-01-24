@@ -1300,9 +1300,9 @@ namespace Messier.Graphics.Prefabs
             }
 
             eObj.SetIndices(0, inds.ToArray(), false);
-            eObj.SetUVs(0, uvs_l.ToArray(), false);
-            eObj.SetNormals(0, norms.ToArray(), false);
-            eObj.SetVertices(0, verts.ToArray(), false);
+            eObj.SetUVs(0, uvs_l.ToArray(), false, 2);
+            eObj.SetNormals(0, norms.ToArray(), false, 3);
+            eObj.SetVertices(0, verts.ToArray(), false, 3);
         }
 
         public static EngineObject Create()

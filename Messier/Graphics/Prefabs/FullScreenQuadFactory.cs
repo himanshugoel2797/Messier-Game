@@ -26,16 +26,16 @@ namespace Messier.Graphics.Prefabs
                 1,1,
                 1,0,
                 0,0
-            }, false);
+            }, false, 2);
 
             eObj.SetVertices(0, new float[]{
                 -1, 1, 0.5f,
                 1, 1, 0.5f,
                 1, -1,0.5f,
                 -1, -1,0.5f
-            }, false);
+            }, false, 3);
         }
-        
+
         public static EngineObject Create()
         {
             return new EngineObject(eObj, true);    //Lock the buffers from changes

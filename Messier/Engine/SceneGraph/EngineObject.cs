@@ -15,7 +15,7 @@ namespace Messier.Engine.SceneGraph
         internal GPUBuffer verts, indices, uvs, norms;
         internal List<Texture> textures;
 
-        public int IndexCount { get; private set; }
+        public int IndexCount { get; set; }
 
         private bool lock_changes = false;
 
@@ -42,11 +42,11 @@ namespace Messier.Engine.SceneGraph
             lock_changes = lockChanges;
         }
 
-        public void SetVertices(int offset, float[] vertices, bool Dynamic)
+        public void SetVertices(int offset, float[] vertices, bool Dynamic, int elementCount)
         {
             if (lock_changes) return;
             verts.BufferData(offset, vertices, Dynamic ? OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicDraw : OpenTK.Graphics.OpenGL4.BufferUsageHint.StaticDraw);
-            mesh.SetBufferObject(0, verts, 3, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Float);
+            mesh.SetBufferObject(0, verts, elementCount, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Float);
         }
 
         public void SetIndices(int offset, uint[] i, bool Dynamic)
@@ -56,18 +56,18 @@ namespace Messier.Engine.SceneGraph
             indices.BufferData(offset, i, Dynamic ? OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicDraw : OpenTK.Graphics.OpenGL4.BufferUsageHint.StaticDraw);
         }
 
-        public void SetUVs(int offset, float[] uv, bool Dynamic)
+        public void SetUVs(int offset, float[] uv, bool Dynamic, int elementCount)
         {
             if (lock_changes) return;
             uvs.BufferData(offset, uv, Dynamic ? OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicDraw : OpenTK.Graphics.OpenGL4.BufferUsageHint.StaticDraw);
-            mesh.SetBufferObject(1, uvs, 2, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Float);
+            mesh.SetBufferObject(1, uvs, elementCount, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Float);
         }
 
-        public void SetNormals(int offset, float[] n, bool Dynamic)
+        public void SetNormals(int offset, float[] n, bool Dynamic, int elementCount)
         {
             if (lock_changes) return;
             norms.BufferData(offset, n, Dynamic ? OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicDraw : OpenTK.Graphics.OpenGL4.BufferUsageHint.StaticDraw);
-            mesh.SetBufferObject(2, norms, 3, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Float);
+            mesh.SetBufferObject(2, norms, elementCount, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Float);
         }
 
         public void SetTexture(int slot, Texture tex)
@@ -84,7 +84,7 @@ namespace Messier.Engine.SceneGraph
             for (int i = 0; i < textures.Count; i++)
                 GraphicsDevice.SetTexture(i, textures[i]);
 
-            GraphicsDevice.SetIndexBuffer(indices);
+            if (indices.dataLen != 0) GraphicsDevice.SetIndexBuffer(indices);
             GraphicsDevice.SetVertexArray(mesh);
         }
 

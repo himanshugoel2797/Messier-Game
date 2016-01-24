@@ -235,11 +235,11 @@ namespace Messier.Engine
 
             for (int i = 0; i < normal.Length; i += 4)
             {
-                float x0 = (f(verts[i] + 0.01f, verts[i + 1], verts[i + 2]) - f(verts[i] - 0.01f, verts[i + 1], verts[i + 2])) / 0.01f;
-                float y0 = (f(verts[i], verts[i + 1] + 0.01f, verts[i + 2]) - f(verts[i], verts[i + 1] - 0.01f, verts[i + 2])) / 0.01f;
-                float z0 = (f(verts[i], verts[i + 1], verts[i + 2] + 0.01f) - f(verts[i], verts[i + 1], verts[i + 2] - 0.01f)) / 0.01f;
+                float x0 = (f(verts[i] + 1f, verts[i + 1], verts[i + 2]) - f(verts[i] - 1f, verts[i + 1], verts[i + 2])) / 2f;
+                float y0 = (f(verts[i], verts[i + 1] + 1f, verts[i + 2]) - f(verts[i], verts[i + 1] - 1f, verts[i + 2])) / 2f;
+                float z0 = (f(verts[i], verts[i + 1], verts[i + 2] + 1f) - f(verts[i], verts[i + 1], verts[i + 2] - 1f)) / 2f;
 
-                Vector3 n00 = new Vector3(x0, y0, z0);//.Normalized();
+                Vector3 n00 = new Vector3(x0, y0, z0).Normalized();
 
                 normal[i] = n00.X;
                 normal[i + 1] = n00.Y;

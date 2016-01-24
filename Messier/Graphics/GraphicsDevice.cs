@@ -179,7 +179,7 @@ namespace Messier.Graphics
         static GraphicsDevice()
         {
             game = new GameWindow((int)(16f / 9f * 540), 540);
-            //game.VSync = VSyncMode.Off;
+            game.VSync = VSyncMode.Off;
             game.Resize += Window_Resize;
             game.Load += Game_Load;
             game.RenderFrame += Game_RenderFrame;
@@ -316,7 +316,7 @@ namespace Messier.Graphics
             if (curFramebuffer == null) return;
 
 
-            for (int i = 0; i < textures.Count; i++) GPUStateMachine.BindTexture(i, textures[i].texTarget, textures[i].id);
+            for (int i = 0; i < textures.Count; i++) if (textures[i] != null) GPUStateMachine.BindTexture(i, textures[i].texTarget, textures[i].id);
             for (int i = 0; i < feedbackBufs.Count; i++) GPUStateMachine.BindBuffer(BufferTarget.TransformFeedbackBuffer, feedbackBufs[i].Item1.id, i, (IntPtr)feedbackBufs[i].Item2, (IntPtr)feedbackBufs[i].Item3);
 
 
@@ -334,7 +334,7 @@ namespace Messier.Graphics
             if (feedbackBufs.Count > 0) GL.EndTransformFeedback();
 
             for (int i = 0; i < feedbackBufs.Count; i++) GPUStateMachine.UnbindBuffer(BufferTarget.TransformFeedbackBuffer, i);
-            for (int i = 0; i < textures.Count; i++) GPUStateMachine.UnbindTexture(i, textures[i].texTarget);
+            for (int i = 0; i < textures.Count; i++) if (textures[i] != null) GPUStateMachine.UnbindTexture(i, textures[i].texTarget);
 
             textures.Clear();
             feedbackBufs.Clear();

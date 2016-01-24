@@ -42,7 +42,7 @@ namespace Messier.Graphics.Cameras
         {
             View = Matrix4.LookAt(new Vector3(-1, 0, 0), Vector3.Zero, Vector3.UnitY);
             Position = -Vector3.UnitX;
-            SetProjection(0.7853f, 16f / 9f, 0.1f, 1000f);  //FOV = 45
+            SetProjection(0.7853f, 16f / 9f, 0.1f, 10000001f);  //FOV = 45
         }
 
         /// <summary>
