@@ -16,6 +16,7 @@ namespace Messier.Engine.SceneGraph
         internal List<Texture> textures;
 
         public int IndexCount { get; set; }
+        public int MaterialIndex { get; set; }
 
         private bool lock_changes = false;
 

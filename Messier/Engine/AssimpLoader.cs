@@ -1,0 +1,130 @@
+﻿using Assimp;
+using OpenTK;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Messier.Engine
+{
+    public class AssimpLoader
+    {
+        public static SceneGraph.Scene LoadFile(string file)
+        {
+            SceneGraph.Scene s0 = new SceneGraph.Scene();
+            SceneGraph.MaterialDictionary m0 = new SceneGraph.MaterialDictionary();
+
+            AssimpContext c = new AssimpContext();
+            Scene s = c.ImportFile(file);
+
+            List<SceneGraph.Light> lights = new List<SceneGraph.Light>();
+            List<SceneGraph.EngineObject> eObjs = new List<SceneGraph.EngineObject>();
+
+            if (s.HasLights)
+            {
+                for (int i = 0; i < s.LightCount; i++)
+                {
+                    SceneGraph.Light tmp = new SceneGraph.Light();
+                    tmp.Position = new Vector3(s.Lights[i].Position.X, s.Lights[i].Position.Y, s.Lights[i].Position.Z);
+                    tmp.ConstantAttenuation = s.Lights[i].AttenuationConstant;
+                    tmp.LinearAttenuation = s.Lights[i].AttenuationLinear;
+                    tmp.QuadraticAttenuation = s.Lights[i].AttenuationQuadratic;
+                    tmp.Name = s.Lights[i].Name;
+                    tmp.Direction = new Vector3(s.Lights[i].Direction.X, s.Lights[i].Direction.Y, s.Lights[i].Direction.Z);
+                    tmp.Type = (SceneGraph.LightType)s.Lights[i].LightType;
+                    tmp.AmbientColor = new Vector3(s.Lights[i].ColorAmbient.R, s.Lights[i].ColorAmbient.G, s.Lights[i].ColorAmbient.B);
+                    tmp.DiffuseColor = new Vector3(s.Lights[i].ColorDiffuse.R, s.Lights[i].ColorDiffuse.G, s.Lights[i].ColorDiffuse.B);
+                    tmp.SpecularColor = new Vector3(s.Lights[i].ColorSpecular.R, s.Lights[i].ColorSpecular.G, s.Lights[i].ColorSpecular.B);
+
+                    lights.Add(tmp);
+                }
+            }
+
+            if (s.HasMeshes)
+            {
+                for (int i = 0; i < s.MeshCount; i++)
+                {
+                    List<float> v = new List<float>();
+
+                    SceneGraph.EngineObject eObj = new SceneGraph.EngineObject();
+                    eObj.SetIndices(0, s.Meshes[i].GetUnsignedIndices(), false);
+
+                    if (s.Meshes[i].HasNormals)
+                    {
+                        for (int j = 0; j < s.Meshes[i].Normals.Count; j++)
+                        {
+                            v.Add(s.Meshes[i].Normals[j].X);
+                            v.Add(s.Meshes[i].Normals[j].Y);
+                            v.Add(s.Meshes[i].Normals[j].Z);
+                        }
+                        eObj.SetNormals(0, v.ToArray(), false, 3);
+                    }
+
+                    if (s.Meshes[i].HasVertices)
+                    {
+                        v.Clear();
+                        for (int j = 0; j < s.Meshes[i].Vertices.Count; j++)
+                        {
+                            v.Add(s.Meshes[i].Vertices[j].X);
+                            v.Add(s.Meshes[i].Vertices[j].Y);
+                            v.Add(s.Meshes[i].Vertices[j].Z);
+                        }
+                        eObj.SetVertices(0, v.ToArray(), false, 3);
+                    }
+
+                    if (s.Meshes[i].TextureCoordinateChannelCount > 0)
+                    {
+                        v.Clear();
+                        for (int j = 0; j < s.Meshes[i].TextureCoordinateChannels[0].Count; j++)
+                        {
+                            v.Add(s.Meshes[i].TextureCoordinateChannels[0][j].X);
+                            v.Add(s.Meshes[i].TextureCoordinateChannels[0][j].Y);
+                        }
+                        eObj.SetUVs(0, v.ToArray(), false, 2);
+                    }
+                    eObjs.Add(eObj);
+
+                }
+            }
+
+            if (s.HasMaterials)
+            {
+                for (int i = 0; i < s.MaterialCount; i++)
+                {
+                    SceneGraph.Material m = new SceneGraph.Material();
+                    Graphics.BitmapTextureSource bmpA = null, bmpD = null, bmpS = null, bmpN = null, bmpDD = null;
+
+                    m.AmbientColor = new Vector3(s.Materials[i].ColorAmbient.R, s.Materials[i].ColorAmbient.G, s.Materials[i].ColorAmbient.B);
+                    m.DiffuseColor = new Vector3(s.Materials[i].ColorDiffuse.R, s.Materials[i].ColorDiffuse.G, s.Materials[i].ColorDiffuse.B);
+                    m.SpecularColor = new Vector3(s.Materials[i].ColorSpecular.R, s.Materials[i].ColorSpecular.G, s.Materials[i].ColorSpecular.B);
+                    if (s.Materials[i].HasTextureAmbient) bmpA = new Graphics.BitmapTextureSource(s.Materials[i].TextureAmbient.FilePath, 0);
+                    if (s.Materials[i].HasTextureDiffuse) bmpD = new Graphics.BitmapTextureSource(s.Materials[i].TextureDiffuse.FilePath, 0);
+                    if (s.Materials[i].HasTextureSpecular) bmpS = new Graphics.BitmapTextureSource(s.Materials[i].TextureSpecular.FilePath, 0);
+                    if (s.Materials[i].HasTextureNormal) bmpN = new Graphics.BitmapTextureSource(s.Materials[i].TextureNormal.FilePath, 0);
+                    if (s.Materials[i].HasTextureDisplacement) bmpDD = new Graphics.BitmapTextureSource(s.Materials[i].TextureDisplacement.FilePath, 0);
+
+                    if (bmpA != null) m.AmbientTexture = new Graphics.Texture();
+                    if (bmpD != null) m.DiffuseTexture = new Graphics.Texture();
+                    if (bmpS != null) m.PBRTexture = new Graphics.Texture();
+                    if (bmpN != null) m.NormalMap = new Graphics.Texture();
+                    if (bmpDD != null) m.DisplacementMap = new Graphics.Texture();
+
+                    if (m.AmbientTexture != null) m.AmbientTexture.SetData(bmpA);
+                    if (m.DiffuseTexture != null) m.DiffuseTexture.SetData(bmpD);
+                    if (m.DisplacementMap != null) m.DisplacementMap.SetData(bmpDD);
+                    if (m.NormalMap != null) m.NormalMap.SetData(bmpN);
+                    if (m.PBRTexture != null) m.PBRTexture.SetData(bmpS);
+
+                    m0[i.ToString()] = m;
+                }
+            }
+
+            s0.Lights = lights.ToArray();
+            s0.EngineObjects = eObjs.ToArray();
+            s0.Materials = m0;
+
+            return s0;
+        }
+    }
+}
