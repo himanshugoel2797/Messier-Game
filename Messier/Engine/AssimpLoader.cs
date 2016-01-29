@@ -119,10 +119,48 @@ namespace Messier.Engine
                     m0[i.ToString()] = m;
                 }
             }
+            
+            Func<Node, SceneGraph.SceneNode> rFunc = null;
+            rFunc = (r) =>
+            {
+                SceneGraph.SceneNode n0 = new SceneGraph.SceneNode();
+                n0.Meshes = r.MeshIndices.ToArray();
 
-            s0.Lights = lights.ToArray();
-            s0.EngineObjects = eObjs.ToArray();
-            s0.Materials = m0;
+                n0.Transform.M11 = r.Transform.A1;
+                n0.Transform.M12 = r.Transform.A2;
+                n0.Transform.M13 = r.Transform.A3;
+                n0.Transform.M14 = r.Transform.A4;
+
+                n0.Transform.M21 = r.Transform.B1;
+                n0.Transform.M22 = r.Transform.B2;
+                n0.Transform.M23 = r.Transform.B3;
+                n0.Transform.M24 = r.Transform.B4;
+
+                n0.Transform.M31 = r.Transform.C1;
+                n0.Transform.M32 = r.Transform.C2;
+                n0.Transform.M33 = r.Transform.C3;
+                n0.Transform.M34 = r.Transform.C4;
+
+                n0.Transform.M41 = r.Transform.D1;
+                n0.Transform.M42 = r.Transform.D2;
+                n0.Transform.M43 = r.Transform.D3;
+                n0.Transform.M44 = r.Transform.D4;
+
+                s0.Lights = lights.ToArray();
+                s0.EngineObjects = eObjs.ToArray();
+                s0.Materials = m0;
+
+                n0.Children = new SceneGraph.SceneNode[r.ChildCount];
+
+                for (int i = 0; i < r.ChildCount; i++)
+                {
+                    n0.Children[i] = rFunc(r.Children[i]);
+                }
+
+                return n0;
+            };
+            
+            s0.RootNode = rFunc(s.RootNode);
 
             return s0;
         }
