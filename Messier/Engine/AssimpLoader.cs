@@ -48,7 +48,28 @@ namespace Messier.Engine
                     List<float> v = new List<float>();
 
                     SceneGraph.EngineObject eObj = new SceneGraph.EngineObject();
-                    eObj.SetIndices(0, s.Meshes[i].GetUnsignedIndices(), false);
+
+                    List<uint> indices = new List<uint>();
+                    for(int k = 0; k < s.Meshes[i].FaceCount; k++)
+                    {
+                        if(s.Meshes[i].Faces[k].IndexCount == 4)
+                        {
+                            indices.Add((uint)s.Meshes[i].Faces[k].Indices[0]);
+                            indices.Add((uint)s.Meshes[i].Faces[k].Indices[1]);
+                            indices.Add((uint)s.Meshes[i].Faces[k].Indices[2]);
+                            indices.Add((uint)s.Meshes[i].Faces[k].Indices[2]);
+                            indices.Add((uint)s.Meshes[i].Faces[k].Indices[3]);
+                            indices.Add((uint)s.Meshes[i].Faces[k].Indices[1]);
+                        }
+                        else if(s.Meshes[i].Faces[k].IndexCount == 3)
+                        {
+                            indices.Add((uint)s.Meshes[i].Faces[k].Indices[0]);
+                            indices.Add((uint)s.Meshes[i].Faces[k].Indices[1]);
+                            indices.Add((uint)s.Meshes[i].Faces[k].Indices[2]);
+                        }
+                    }
+
+                    eObj.SetIndices(0, indices.ToArray(), false);
 
                     if (s.Meshes[i].HasNormals)
                     {
@@ -127,23 +148,23 @@ namespace Messier.Engine
                 n0.Meshes = r.MeshIndices.ToArray();
 
                 n0.Transform.M11 = r.Transform.A1;
-                n0.Transform.M12 = r.Transform.A2;
-                n0.Transform.M13 = r.Transform.A3;
-                n0.Transform.M14 = r.Transform.A4;
+                n0.Transform.M12 = r.Transform.B1;
+                n0.Transform.M13 = r.Transform.C1;
+                n0.Transform.M14 = r.Transform.D1;
 
-                n0.Transform.M21 = r.Transform.B1;
+                n0.Transform.M21 = r.Transform.A2;
                 n0.Transform.M22 = r.Transform.B2;
-                n0.Transform.M23 = r.Transform.B3;
-                n0.Transform.M24 = r.Transform.B4;
+                n0.Transform.M23 = r.Transform.C2;
+                n0.Transform.M24 = r.Transform.D2;
 
-                n0.Transform.M31 = r.Transform.C1;
-                n0.Transform.M32 = r.Transform.C2;
+                n0.Transform.M31 = r.Transform.A3;
+                n0.Transform.M32 = r.Transform.B3;
                 n0.Transform.M33 = r.Transform.C3;
-                n0.Transform.M34 = r.Transform.C4;
+                n0.Transform.M34 = r.Transform.D3;
 
-                n0.Transform.M41 = r.Transform.D1;
-                n0.Transform.M42 = r.Transform.D2;
-                n0.Transform.M43 = r.Transform.D3;
+                n0.Transform.M41 = r.Transform.A4;
+                n0.Transform.M42 = r.Transform.B4;
+                n0.Transform.M43 = r.Transform.C4;
                 n0.Transform.M44 = r.Transform.D4;
 
                 s0.Lights = lights.ToArray();

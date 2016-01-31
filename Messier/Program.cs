@@ -18,7 +18,7 @@ namespace Messier
         [STAThread]
         static void Main()
         {
-            Testing.TG_VectField.TerrainGenerationTest.Run();
+            Testing.SceneTest.SceneTest.Run();
         }
     }
 }

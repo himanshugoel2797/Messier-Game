@@ -32,7 +32,7 @@ namespace Messier.Graphics
             boundBuffers[BufferTarget.ArrayBuffer] = new List<Stack<int>>();
             boundBuffers[BufferTarget.ArrayBuffer].Add(new Stack<int>());
             boundBuffers[BufferTarget.ArrayBuffer][0].Push(0);
-            
+
             boundBuffers[BufferTarget.TextureBuffer] = new List<Stack<int>>();
             boundBuffers[BufferTarget.TextureBuffer].Add(new Stack<int>());
             boundBuffers[BufferTarget.TextureBuffer][0].Push(0);
@@ -134,16 +134,17 @@ namespace Messier.Graphics
         #region Framebuffer State
         public static void BindFramebuffer(int id)
         {
-            if (framebuffers.Count == 0) framebuffers.Push(0);
-
-            if (framebuffers.Peek() != id || id == 0) GL.BindFramebuffer(FramebufferTarget.Framebuffer, id);
-            framebuffers.Push(id);
+            //if (framebuffers.Count == 0) framebuffers.Push(0);
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, id);
+            //if (framebuffers.Peek() != id || id == 0) GL.BindFramebuffer(FramebufferTarget.Framebuffer, id);
+            //framebuffers.Push(id);
         }
 
         public static void UnbindFramebuffer()
         {
-            framebuffers.Pop();
-            BindFramebuffer(framebuffers.Pop());
+            BindFramebuffer(0);
+            //framebuffers.Pop();
+            //BindFramebuffer(framebuffers.Pop());
         }
         #endregion
 

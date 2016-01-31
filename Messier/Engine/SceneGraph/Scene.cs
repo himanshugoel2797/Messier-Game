@@ -16,19 +16,36 @@ namespace Messier.Engine.SceneGraph
 
         public MaterialDictionary Materials;
 
+        public static ShaderProgram SceneShader;
+
         private void Draw(GraphicsContext context, SceneNode n, Matrix4 parentTransform)
         {
-            Matrix4 t = parentTransform * n.Transform;
- 
+            //Matrix4 t = parentTransform;
+            Matrix4 t = n.Transform * parentTransform;
+
             for (int i = 0; i < n.Meshes.Length; i++)
             {
                 EngineObject e = EngineObjects[n.Meshes[i]];
                 Material m = Materials[e.MaterialIndex.ToString()];
 
                 //Setup the engine object for rendering
+                e.Bind();
+                GraphicsDevice.SetShaderProgram(SceneShader);
+                SceneShader.Set("World", t);
+                SceneShader.Set("SpecExp", m.SpecularExponent);
+                SceneShader.Set("SpecColor", m.SpecularColor);
+                SceneShader.Set("DiffuseColor", m.DiffuseColor);
+                SceneShader.Set("AmbientColor", m.AmbientColor);
+                SceneShader.Set("DiffuseTex", 1);
+                SceneShader.Set("NormalTex", 2);
+
+                GraphicsDevice.SetTexture(0, m.AmbientTexture);
+                GraphicsDevice.SetTexture(1, m.DiffuseTexture);
+                GraphicsDevice.SetTexture(2, m.NormalMap);
+                GraphicsDevice.Draw(OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, 0, e.IndexCount);
             }
 
-            for(int i = 0; i < n.Children.Length; i++)
+            for (int i = 0; i < n.Children.Length; i++)
             {
                 Draw(context, n.Children[i], t);
             }
@@ -36,7 +53,9 @@ namespace Messier.Engine.SceneGraph
 
         public void Draw(GraphicsContext context)
         {
-            Draw(context, RootNode, Matrix4.Identity);
+            SceneShader.Set("View", context.View);
+            SceneShader.Set("Proj", context.Projection);
+            Draw(context, RootNode, RootNode.Transform);
         }
     }
 }

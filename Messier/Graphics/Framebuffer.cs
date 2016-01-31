@@ -32,14 +32,14 @@ namespace Messier.Graphics
         {
             set
             {
-                bindings[attachment] = value;
+                if (attachment != FramebufferAttachment.DepthAttachment) bindings[attachment] = value;
                 GPUStateMachine.BindFramebuffer(id);
                 GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, attachment, value.texTarget, value.id, 0);
 
                 GL.DrawBuffers(bindings.Keys.Count,
                     bindings.Keys.OrderByDescending((a) => (int)a).Reverse().Cast<DrawBuffersEnum>().ToArray());
 
-                if(GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer) != FramebufferErrorCode.FramebufferComplete)
+                if (GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer) != FramebufferErrorCode.FramebufferComplete)
                 {
                     throw new Exception("Incomplete Framebuffer!");
                 }
@@ -67,7 +67,7 @@ namespace Messier.Graphics
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
                 // TODO: set large fields to null.
-                if(id != 0)GL.DeleteFramebuffer(id);
+                if (id != 0) GL.DeleteFramebuffer(id);
                 id = 0;
 
                 disposedValue = true;

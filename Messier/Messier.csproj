@@ -111,6 +111,7 @@
     <Compile Include="Graphics\Fence.cs" />
     <Compile Include="Graphics\Framebuffer.cs" />
     <Compile Include="Graphics\FramebufferTextureSource.cs" />
+    <Compile Include="Graphics\GBuffer.cs" />
     <Compile Include="Graphics\GPUBuffer.cs" />
     <Compile Include="Graphics\GPUStateMachine.cs" />
     <Compile Include="Graphics\GraphicsContext.cs" />
@@ -130,6 +131,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PUG\RNG.cs" />
+    <Compile Include="Testing\SceneTest\SceneTest.cs" />
     <Compile Include="Testing\TG_VectField\TerrainGenerationTestA.cs" />
     <Compile Include="Testing\TG_A\TerrainGenerationTestA.cs" />
     <Compile Include="Testing\SmoothVoxTest\VoxelTest.cs" />
@@ -163,6 +165,12 @@
     <None Include="Shaders\fragment.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Shaders\GBuffer\fragment.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Shaders\GBuffer\vertex.glsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Shaders\TerrainLoD\fragment.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -188,6 +196,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Shaders\vertex.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="test.fbx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Testing\TG_VectField\fragment.glsl">

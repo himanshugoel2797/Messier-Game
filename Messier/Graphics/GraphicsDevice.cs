@@ -188,6 +188,7 @@ namespace Messier.Graphics
             curVarray = null;
             curProg = null;
             curFramebuffer = Framebuffer.Default;
+            GPUStateMachine.BindFramebuffer(curFramebuffer.id);
             textures = new List<Texture>();
             feedbackBufs = new List<Tuple<GPUBuffer, int, int>>();
         }
@@ -275,7 +276,7 @@ namespace Messier.Graphics
 
         public static void SetFramebuffer(Framebuffer framebuf)
         {
-            if (curFramebuffer != null && curFramebuffer.id != framebuf.id) GPUStateMachine.UnbindFramebuffer();
+            if (curFramebuffer != null && framebuf != null && curFramebuffer.id != framebuf.id) GPUStateMachine.UnbindFramebuffer();
             curFramebuffer = framebuf;
         }
 
