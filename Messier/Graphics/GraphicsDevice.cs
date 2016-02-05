@@ -278,6 +278,8 @@ namespace Messier.Graphics
         {
             if (curFramebuffer != null && framebuf != null && curFramebuffer.id != framebuf.id) GPUStateMachine.UnbindFramebuffer();
             curFramebuffer = framebuf;
+            if (curFramebuffer != null)
+                GPUStateMachine.BindFramebuffer(curFramebuffer.id);
         }
 
         public static void SetTexture(int slot, Texture tex)
@@ -322,7 +324,6 @@ namespace Messier.Graphics
 
 
 
-            GPUStateMachine.BindFramebuffer(curFramebuffer.id);
             if (feedbackBufs.Count > 0) GL.BeginTransformFeedback((TransformFeedbackPrimitiveType)feedbackPrimitive);
 
             GL.UseProgram(curProg.id);

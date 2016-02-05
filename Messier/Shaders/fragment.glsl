@@ -13,8 +13,6 @@ uniform vec3 eyePos;
 
 void main()
 {
-  //Color = texture(img, UV);
-
-  Color.rgb = vec3(1);
+  Color = texture2D(img, UV);
   Color.a = 1;
 }

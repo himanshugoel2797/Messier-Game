@@ -166,7 +166,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Shaders\GBuffer\fragment.glsl">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Shaders\GBuffer\vertex.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

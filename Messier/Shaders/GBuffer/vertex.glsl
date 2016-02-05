@@ -10,7 +10,6 @@ out vec2 UV;
 out float depth;
 out vec3 worldXY;
 smooth out vec3 normPos;
-out vec2 logBufDat;
 
 
 //Uniforms

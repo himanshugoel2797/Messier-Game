@@ -2,6 +2,7 @@
 using Messier.Engine.SceneGraph;
 using Messier.Graphics;
 using Messier.Graphics.Cameras;
+using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
@@ -18,14 +19,15 @@ namespace Messier.Testing.SceneTest
             ShaderProgram prog = null;
             Scene s = null;
             GBuffer gbuf = null;
+            BitmapTextureSource bmpSrc = new BitmapTextureSource("grassTex.jpg", 0);
             GraphicsContext context = new GraphicsContext();
             context.Camera = new FirstPersonCamera(new OpenTK.Vector3(4, 3, 3), OpenTK.Vector3.UnitY);
             EngineObject fsq = null;
+            Texture t = null;
 
 
             GraphicsDevice.Load += () =>
             {
-
                 s = AssimpLoader.LoadFile("test.fbx");
 
                 gbuf = new GBuffer(960, 540);
@@ -33,42 +35,52 @@ namespace Messier.Testing.SceneTest
                 prog = new ShaderProgram(ShaderSource.Load(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader, "Shaders/vertex.glsl"),
                                              ShaderSource.Load(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader, "Shaders/fragment.glsl"));
 
-                prog.Set("img", 0);
+                prog.Set("World", Matrix4.Identity);
+                prog.Set("View", Matrix4.Identity);
+                prog.Set("Proj", Matrix4.Identity);
+
+                t = new Texture();
+                t.SetData(bmpSrc);
 
                 fsq = Messier.Graphics.Prefabs.FullScreenQuadFactory.Create();
-                fsq.SetTexture(0, gbuf.Specular);
+                fsq.SetTexture(0, gbuf.Normal);
 
                 //Scene.SceneShader = prog;
                 Scene.SceneShader = gbuf.Shader;
+                Scene.SceneShader.Set("World", Matrix4.Identity);
+                Scene.SceneShader.Set("View", Matrix4.Identity);
+                Scene.SceneShader.Set("Proj", Matrix4.Identity);
             };
 
             GraphicsDevice.Update += (e) =>
              {
-                GraphicsDevice.Wireframe = !false;
-                GraphicsDevice.AlphaEnabled = true;
-                GraphicsDevice.DepthTestEnabled = true;
-                GraphicsDevice.CullEnabled = false;
-                GraphicsDevice.CullMode = CullFaceMode.Back;
+                 GraphicsDevice.Wireframe = false;
+                 GraphicsDevice.AlphaEnabled = true;
+                 GraphicsDevice.DepthTestEnabled = true;
+                 GraphicsDevice.CullEnabled = false;
+                 GraphicsDevice.CullMode = CullFaceMode.Back;
 
                  context.Update(e);
-                 //Scene.SceneShader.Set("Fcoef", (float)(2.0f / Math.Log(1000001) / Math.Log(2)));
              };
 
             GraphicsDevice.Render += (e) =>
             {
+                gbuf.Bind();
+                GraphicsDevice.SetViewport(0, 0, 960, 540);
                 GraphicsDevice.Clear();
-                //gbuf.Bind();
-                //GraphicsDevice.Clear();
-                //s.Draw(context);
 
-                //GraphicsDevice.SetFramebuffer(Framebuffer.Default);
-                //GraphicsDevice.Wireframe = false;
-                //GraphicsDevice.AlphaEnabled = !true;
-                //GraphicsDevice.DepthTestEnabled = !true;
-                //GraphicsDevice.CullEnabled = false;
-                //GraphicsDevice.CullMode = CullFaceMode.Back;
+                s.Draw(context);
+
+                GraphicsDevice.SetFramebuffer(Framebuffer.Default);
+                GraphicsDevice.SetViewport(0, 0, GraphicsDevice.WindowSize.Width, GraphicsDevice.WindowSize.Height);
+                GraphicsDevice.Wireframe = false;
+                GraphicsDevice.AlphaEnabled = true;
+                GraphicsDevice.DepthTestEnabled = !true;
+                GraphicsDevice.CullEnabled = false;
+                GraphicsDevice.CullMode = CullFaceMode.Back;
                 fsq.Bind();
                 GraphicsDevice.SetShaderProgram(prog);
+                prog.Set("img", 0);
                 GraphicsDevice.Draw(PrimitiveType.Triangles, 0, fsq.IndexCount);
 
                 GraphicsDevice.SwapBuffers();

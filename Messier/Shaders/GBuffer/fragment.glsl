@@ -20,6 +20,7 @@ uniform vec3 SpecColor;
 void main()
 {
   RGBA0 = texture(DiffuseTex, UV) * vec4(DiffuseColor, 1) + vec4(AmbientColor, 1) * 0.2;
+  //RGBA0 = vec4(1);
   RGBA0.a = 1;
   
   Depth0.xyz = normalize(worldXY);
@@ -28,6 +29,7 @@ void main()
   Normal0.xyz = normalize(normPos);
   Normal0.w = 1;
 
+  Material0 = vec4(1);
   Material0.xyz = SpecColor.xyz;
   Material0.w = SpecExp;
 }
