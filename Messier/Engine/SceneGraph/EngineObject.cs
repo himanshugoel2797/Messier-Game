@@ -13,6 +13,7 @@ namespace Messier.Engine.SceneGraph
 
         internal VertexArray mesh;
         internal GPUBuffer verts, indices, uvs, norms;
+        internal Dictionary<int, Dictionary<int, GPUBuffer>> animFrames;
         internal List<Texture> textures;
 
         public int IndexCount { get; set; }
@@ -22,6 +23,7 @@ namespace Messier.Engine.SceneGraph
 
         public EngineObject()
         {
+            animFrames = new Dictionary<int, Dictionary<int, GPUBuffer>>();
             mesh = new VertexArray();
             verts = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ArrayBuffer);
             indices = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ElementArrayBuffer);
@@ -50,11 +52,23 @@ namespace Messier.Engine.SceneGraph
             mesh.SetBufferObject(0, verts, elementCount, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Float);
         }
 
+        public void SetAnimationFrame(int animChannel, int frame, GPUBuffer frameVerts)
+        {
+            animFrames[animChannel][frame] = frameVerts;
+        }
+
         public void SetIndices(int offset, uint[] i, bool Dynamic)
         {
             if (lock_changes) return;
             IndexCount = i.Length;
             indices.BufferData(offset, i, Dynamic ? OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicDraw : OpenTK.Graphics.OpenGL4.BufferUsageHint.StaticDraw);
+        }
+
+        public void SetIndices(EngineObject src)
+        {
+            if (src == null) throw new ArgumentNullException();
+            this.indices = src.indices;
+            this.IndexCount = this.indices.dataLen;
         }
 
         public void SetUVs(int offset, float[] uv, bool Dynamic, int elementCount)

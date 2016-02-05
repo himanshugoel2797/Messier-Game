@@ -16,7 +16,7 @@ namespace Messier.Testing.SceneTest
     {
         public static void Run()
         {
-            ShaderProgram prog = null;
+            ShaderProgram prog = null, prog2 = null;
             Scene s = null;
             GBuffer gbuf = null;
             BitmapTextureSource bmpSrc = new BitmapTextureSource("grassTex.jpg", 0);
@@ -35,6 +35,10 @@ namespace Messier.Testing.SceneTest
                 prog = new ShaderProgram(ShaderSource.Load(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader, "Shaders/vertex.glsl"),
                                              ShaderSource.Load(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader, "Shaders/fragment.glsl"));
 
+                prog2 = new ShaderProgram(ShaderSource.Load(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader, "Shaders/vertex.glsl"),
+                                             ShaderSource.Load(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader, "Shaders/fragment.glsl"));
+
+
                 prog.Set("World", Matrix4.Identity);
                 prog.Set("View", Matrix4.Identity);
                 prog.Set("Proj", Matrix4.Identity);
@@ -43,7 +47,9 @@ namespace Messier.Testing.SceneTest
                 t.SetData(bmpSrc);
 
                 fsq = Messier.Graphics.Prefabs.FullScreenQuadFactory.Create();
-                fsq.SetTexture(0, gbuf.Normal);
+                fsq.SetTexture(0, gbuf.Diffuse);
+
+                PC2Parser.Load("test.pc2", 0, s.EngineObjects[0]);
 
                 //Scene.SceneShader = prog;
                 Scene.SceneShader = gbuf.Shader;
@@ -54,13 +60,18 @@ namespace Messier.Testing.SceneTest
 
             GraphicsDevice.Update += (e) =>
              {
-                 GraphicsDevice.Wireframe = false;
+                 GraphicsDevice.Wireframe = !false;
                  GraphicsDevice.AlphaEnabled = true;
                  GraphicsDevice.DepthTestEnabled = true;
                  GraphicsDevice.CullEnabled = false;
                  GraphicsDevice.CullMode = CullFaceMode.Back;
 
                  context.Update(e);
+
+                 prog2.Set("World", Matrix4.Identity);
+                 prog2.Set("View", context.View);
+                 prog2.Set("Proj", context.Projection);
+
              };
 
             GraphicsDevice.Render += (e) =>
@@ -68,7 +79,6 @@ namespace Messier.Testing.SceneTest
                 gbuf.Bind();
                 GraphicsDevice.SetViewport(0, 0, 960, 540);
                 GraphicsDevice.Clear();
-
                 s.Draw(context);
 
                 GraphicsDevice.SetFramebuffer(Framebuffer.Default);

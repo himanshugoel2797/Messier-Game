@@ -91,6 +91,8 @@
     <Compile Include="Engine\BoundingBox.cs" />
     <Compile Include="Engine\DualVoxelChunk.cs" />
     <Compile Include="Engine\OBJLoader.cs" />
+    <Compile Include="Engine\PC2Parser.cs" />
+    <Compile Include="Engine\SceneGraph\AnimationFrames.cs" />
     <Compile Include="Engine\SceneGraph\EngineObject.cs" />
     <Compile Include="Engine\SceneGraph\Light.cs" />
     <Compile Include="Engine\SceneGraph\Material.cs" />
@@ -199,6 +201,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="test.fbx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="test.obj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="test.pc2">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Testing\TG_VectField\fragment.glsl">

@@ -50,9 +50,9 @@ namespace Messier.Engine
                     SceneGraph.EngineObject eObj = new SceneGraph.EngineObject();
 
                     List<uint> indices = new List<uint>();
-                    for(int k = 0; k < s.Meshes[i].FaceCount; k++)
+                    for (int k = 0; k < s.Meshes[i].FaceCount; k++)
                     {
-                        if(s.Meshes[i].Faces[k].IndexCount == 4)
+                        if (s.Meshes[i].Faces[k].IndexCount == 4)
                         {
                             indices.Add((uint)s.Meshes[i].Faces[k].Indices[0]);
                             indices.Add((uint)s.Meshes[i].Faces[k].Indices[1]);
@@ -61,7 +61,7 @@ namespace Messier.Engine
                             indices.Add((uint)s.Meshes[i].Faces[k].Indices[3]);
                             indices.Add((uint)s.Meshes[i].Faces[k].Indices[1]);
                         }
-                        else if(s.Meshes[i].Faces[k].IndexCount == 3)
+                        else if (s.Meshes[i].Faces[k].IndexCount == 3)
                         {
                             indices.Add((uint)s.Meshes[i].Faces[k].Indices[0]);
                             indices.Add((uint)s.Meshes[i].Faces[k].Indices[1]);
@@ -71,8 +71,12 @@ namespace Messier.Engine
 
                     eObj.SetIndices(0, indices.ToArray(), false);
 
+                    eObj.MaterialIndex = s.Meshes[i].MaterialIndex;
+                    
+
                     if (s.Meshes[i].HasNormals)
                     {
+                        v.Clear();
                         for (int j = 0; j < s.Meshes[i].Normals.Count; j++)
                         {
                             v.Add(s.Meshes[i].Normals[j].X);
@@ -140,7 +144,7 @@ namespace Messier.Engine
                     m0[i.ToString()] = m;
                 }
             }
-            
+
             Func<Node, SceneGraph.SceneNode> rFunc = null;
             rFunc = (r) =>
             {
@@ -180,7 +184,7 @@ namespace Messier.Engine
 
                 return n0;
             };
-            
+
             s0.RootNode = rFunc(s.RootNode);
 
             return s0;
