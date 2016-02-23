@@ -13,17 +13,27 @@ namespace Messier.Engine.SceneGraph
 
         internal VertexArray mesh;
         internal GPUBuffer verts, indices, uvs, norms;
-        internal Dictionary<int, Dictionary<int, GPUBuffer>> animFrames;
+        internal Dictionary<int, GPUBuffer>[] animFrames;
         internal List<Texture> textures;
 
         public int IndexCount { get; set; }
         public int MaterialIndex { get; set; }
+        public int[] CurrentFrame { get; set; }
+        public int[] FrameCount { get; set; }
+
+        public const int MaximumAnimationChannels = 4;
 
         private bool lock_changes = false;
 
         public EngineObject()
         {
-            animFrames = new Dictionary<int, Dictionary<int, GPUBuffer>>();
+            animFrames = new Dictionary<int, GPUBuffer>[MaximumAnimationChannels];
+            CurrentFrame = new int[MaximumAnimationChannels];
+            FrameCount = new int[MaximumAnimationChannels];
+
+            for (int i = 0; i < MaximumAnimationChannels; i++)
+                animFrames[i] = new Dictionary<int, GPUBuffer>();
+
             mesh = new VertexArray();
             verts = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ArrayBuffer);
             indices = new GPUBuffer(OpenTK.Graphics.OpenGL4.BufferTarget.ElementArrayBuffer);
@@ -40,6 +50,7 @@ namespace Messier.Engine.SceneGraph
             uvs = src.uvs;
             norms = src.norms;
             IndexCount = src.IndexCount;
+            animFrames = src.animFrames;
 
             textures = new List<Texture>();
             lock_changes = lockChanges;
@@ -54,6 +65,8 @@ namespace Messier.Engine.SceneGraph
 
         public void SetAnimationFrame(int animChannel, int frame, GPUBuffer frameVerts)
         {
+            if (lock_changes) return;
+            if (animChannel >= MaximumAnimationChannels) throw new ArgumentOutOfRangeException(nameof(animChannel));
             animFrames[animChannel][frame] = frameVerts;
         }
 
@@ -94,10 +107,20 @@ namespace Messier.Engine.SceneGraph
             textures[slot] = tex;
         }
 
+        //Where interval is the time elapsed since the previous frame in milliseconds
+        public void CalculateNextFrame(double interval)
+        {
+            //determine the number of frames that should have elapsed in the given time
+
+            //Increment the frame counters appropriately
+        }
+
         public void Bind()
         {
             for (int i = 0; i < textures.Count; i++)
                 GraphicsDevice.SetTexture(i, textures[i]);
+
+            //Determine which two buffers should be bound for each channel based off of the current frame, then specify the interpolation weight
 
             if (indices.dataLen != 0) GraphicsDevice.SetIndexBuffer(indices);
             GraphicsDevice.SetVertexArray(mesh);

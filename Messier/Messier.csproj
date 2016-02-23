@@ -92,7 +92,6 @@
     <Compile Include="Engine\DualVoxelChunk.cs" />
     <Compile Include="Engine\OBJLoader.cs" />
     <Compile Include="Engine\PC2Parser.cs" />
-    <Compile Include="Engine\SceneGraph\AnimationFrames.cs" />
     <Compile Include="Engine\SceneGraph\EngineObject.cs" />
     <Compile Include="Engine\SceneGraph\Light.cs" />
     <Compile Include="Engine\SceneGraph\Material.cs" />
