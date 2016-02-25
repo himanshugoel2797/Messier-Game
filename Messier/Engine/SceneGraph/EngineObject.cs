@@ -1,4 +1,5 @@
 ﻿using Messier.Graphics;
+using OpenTK;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +21,12 @@ namespace Messier.Engine.SceneGraph
         public int MaterialIndex { get; set; }
         public int[] CurrentFrame { get; set; }
         public int[] FrameCount { get; set; }
+
+        public Bone[] Bones { get; set; }
+        public float[] Vertices { get; set; }
+        public Dictionary<string, Animation> SkeletalAnimations { get; set; }
+        public string CurrentSkeletalAnimationName { get; set; }
+        public int CurrentSkeletalAnimationFrame { get; set; }
 
         public const int MaximumAnimationChannels = 4;
 
@@ -51,14 +58,49 @@ namespace Messier.Engine.SceneGraph
             norms = src.norms;
             IndexCount = src.IndexCount;
             animFrames = src.animFrames;
+            Bones = src.Bones;
+            CurrentFrame = src.CurrentFrame;
+            FrameCount = src.FrameCount;
+            MaterialIndex = src.MaterialIndex;
+            SkeletalAnimations = src.SkeletalAnimations;
+            CurrentSkeletalAnimationName = src.CurrentSkeletalAnimationName;
+            CurrentSkeletalAnimationFrame = src.CurrentSkeletalAnimationFrame;
+
+            Vertices = new float[src.Vertices.Length];
+            Array.Copy(src.Vertices, Vertices, Vertices.Length);
 
             textures = new List<Texture>();
             lock_changes = lockChanges;
         }
 
+        public Matrix4 UpdateVertices(string nodeName, Matrix4 transform)
+        {
+            Bone b = Bones.Single(c => c.Name == nodeName);
+            var anim = SkeletalAnimations[CurrentSkeletalAnimationName].GetFrame(CurrentSkeletalAnimationFrame);
+
+            Matrix4 boneTrans = Matrix4.CreateFromQuaternion(anim.Rotation) * Matrix4.CreateTranslation(anim.Translation) * Matrix4.CreateScale(anim.Scale);
+
+            var t = transform * b.Offset * boneTrans;
+
+            for (int i = 0; i < b.Weights.Count; i++)
+            {
+                var tmp = new Vector3(Vertices[b.Weights[i].Index * 3], Vertices[b.Weights[i].Index * 3 + 1], Vertices[b.Weights[i].Index * 3 + 2]);
+                tmp = Vector3.Transform(tmp, t * b.Weights[i].Weight);
+                Vertices[b.Weights[i].Index * 3] = tmp.X;
+                Vertices[b.Weights[i].Index * 3 + 1] = tmp.Y;
+                Vertices[b.Weights[i].Index * 3 + 2] = tmp.Z;
+            }
+
+            SetVertices(0, Vertices, true, 3);
+
+            return t;
+        }
+
         public void SetVertices(int offset, float[] vertices, bool Dynamic, int elementCount)
         {
             if (lock_changes) return;
+            Vertices = new float[vertices.Length];
+            Array.Copy(vertices, Vertices, Vertices.Length);
             verts.BufferData(offset, vertices, Dynamic ? OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicDraw : OpenTK.Graphics.OpenGL4.BufferUsageHint.StaticDraw);
             mesh.SetBufferObject(0, verts, elementCount, OpenTK.Graphics.OpenGL4.VertexAttribPointerType.Float);
         }

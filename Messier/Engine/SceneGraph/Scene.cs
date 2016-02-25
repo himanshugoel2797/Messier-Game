@@ -12,6 +12,7 @@ namespace Messier.Engine.SceneGraph
     {
         public EngineObject[] EngineObjects;
         public Light[] Lights;
+        public Dictionary<string, Animation> Animations;
         public SceneNode RootNode;
 
         public MaterialDictionary Materials;
@@ -43,6 +44,12 @@ namespace Messier.Engine.SceneGraph
                 GraphicsDevice.SetTexture(1, m.DiffuseTexture);
                 GraphicsDevice.SetTexture(2, m.NormalMap);
                 GraphicsDevice.Draw(OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, 0, e.IndexCount);
+
+                if(EngineObjects[i].Bones.Any((a)=>a.Name == n.Name))
+                {
+                    //This node represents a bone for this mesh, retrieve the relevant animation data and use it to adjust the transform
+                    t = EngineObjects[i].UpdateVertices(n.Name, t);
+                }
             }
 
             for (int i = 0; i < n.Children.Length; i++)

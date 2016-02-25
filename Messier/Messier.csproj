@@ -92,6 +92,9 @@
     <Compile Include="Engine\DualVoxelChunk.cs" />
     <Compile Include="Engine\OBJLoader.cs" />
     <Compile Include="Engine\PC2Parser.cs" />
+    <Compile Include="Engine\SceneGraph\Animation.cs" />
+    <Compile Include="Engine\SceneGraph\AnimationData.cs" />
+    <Compile Include="Engine\SceneGraph\Bone.cs" />
     <Compile Include="Engine\SceneGraph\EngineObject.cs" />
     <Compile Include="Engine\SceneGraph\Light.cs" />
     <Compile Include="Engine\SceneGraph\Material.cs" />
@@ -100,6 +103,7 @@
     <Compile Include="Engine\Chunk.cs" />
     <Compile Include="Engine\SceneGraph\Scene.cs" />
     <Compile Include="Engine\SceneGraph\SceneNode.cs" />
+    <Compile Include="Engine\SceneGraph\VertexWeight.cs" />
     <Compile Include="Engine\TextWriter.cs" />
     <Compile Include="Engine\VoxelTypeMap.cs" />
     <Compile Include="Graphics\BitmapTextureSource.cs" />

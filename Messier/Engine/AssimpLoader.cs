@@ -10,6 +10,33 @@ namespace Messier.Engine
 {
     public class AssimpLoader
     {
+        private static Matrix4 ToCustom(Matrix4x4 r)
+        {
+            Matrix4 n0 = new Matrix4();
+
+            n0.M11 = r.A1;
+            n0.M12 = r.B1;
+            n0.M13 = r.C1;
+            n0.M14 = r.D1;
+
+            n0.M21 = r.A2;
+            n0.M22 = r.B2;
+            n0.M23 = r.C2;
+            n0.M24 = r.D2;
+
+            n0.M31 = r.A3;
+            n0.M32 = r.B3;
+            n0.M33 = r.C3;
+            n0.M34 = r.D3;
+
+            n0.M41 = r.A4;
+            n0.M42 = r.B4;
+            n0.M43 = r.C4;
+            n0.M44 = r.D4;
+
+            return n0;
+        }
+
         public static SceneGraph.Scene LoadFile(string file)
         {
             SceneGraph.Scene s0 = new SceneGraph.Scene();
@@ -18,8 +45,11 @@ namespace Messier.Engine
             AssimpContext c = new AssimpContext();
             Scene s = c.ImportFile(file);
 
+            List<List<string>> boneNames = new List<List<string>>();
+
             List<SceneGraph.Light> lights = new List<SceneGraph.Light>();
             List<SceneGraph.EngineObject> eObjs = new List<SceneGraph.EngineObject>();
+            Dictionary<string, Animation> anim = new Dictionary<string, Animation>();
 
             if (s.HasLights)
             {
@@ -72,7 +102,30 @@ namespace Messier.Engine
                     eObj.SetIndices(0, indices.ToArray(), false);
 
                     eObj.MaterialIndex = s.Meshes[i].MaterialIndex;
-                    
+
+                    boneNames.Add(new List<string>());
+                    eObj.Bones = new SceneGraph.Bone[s.Meshes[i].BoneCount];
+                    for (int k = 0; k < s.Meshes[i].BoneCount; k++)
+                    {
+                        eObj.Bones[k] = new SceneGraph.Bone()
+                        {
+                            Weights = new List<SceneGraph.VertexWeight>(),
+                            Name = s.Meshes[i].Bones[k].Name
+                        };
+                        boneNames[i].Add(eObj.Bones[k].Name);
+
+                        for (int l = 0; l < s.Meshes[i].Bones[k].VertexWeightCount; l++)
+                        {
+                            eObj.Bones[k].Weights.Add(new SceneGraph.VertexWeight()
+                            {
+                                Index = s.Meshes[i].Bones[k].VertexWeights[l].VertexID,
+                                Weight = s.Meshes[i].Bones[k].VertexWeights[l].Weight,
+                            });
+                        }
+
+                        eObj.Bones[k].Offset = ToCustom(s.Meshes[i].Bones[k].OffsetMatrix);
+                    }
+
 
                     if (s.Meshes[i].HasNormals)
                     {
@@ -151,30 +204,14 @@ namespace Messier.Engine
                 SceneGraph.SceneNode n0 = new SceneGraph.SceneNode();
                 n0.Meshes = r.MeshIndices.ToArray();
 
-                n0.Transform.M11 = r.Transform.A1;
-                n0.Transform.M12 = r.Transform.B1;
-                n0.Transform.M13 = r.Transform.C1;
-                n0.Transform.M14 = r.Transform.D1;
-
-                n0.Transform.M21 = r.Transform.A2;
-                n0.Transform.M22 = r.Transform.B2;
-                n0.Transform.M23 = r.Transform.C2;
-                n0.Transform.M24 = r.Transform.D2;
-
-                n0.Transform.M31 = r.Transform.A3;
-                n0.Transform.M32 = r.Transform.B3;
-                n0.Transform.M33 = r.Transform.C3;
-                n0.Transform.M34 = r.Transform.D3;
-
-                n0.Transform.M41 = r.Transform.A4;
-                n0.Transform.M42 = r.Transform.B4;
-                n0.Transform.M43 = r.Transform.C4;
-                n0.Transform.M44 = r.Transform.D4;
+                n0.Transform = ToCustom(r.Transform);
 
                 s0.Lights = lights.ToArray();
                 s0.EngineObjects = eObjs.ToArray();
                 s0.Materials = m0;
 
+
+                n0.Name = r.Name;
                 n0.Children = new SceneGraph.SceneNode[r.ChildCount];
 
                 for (int i = 0; i < r.ChildCount; i++)
