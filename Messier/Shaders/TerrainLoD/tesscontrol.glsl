@@ -32,6 +32,8 @@ void main()
     else if(dist < 5 * 20)gl_TessLevelOuter[0] = 10;
     else gl_TessLevelOuter[0] = 1/dist;
 
+	gl_TessLevelOuter[0] = 1;
+
     gl_TessLevelOuter[1] = gl_TessLevelOuter[0];
     gl_TessLevelOuter[2] = gl_TessLevelOuter[1];
     gl_TessLevelInner[0] = gl_TessLevelOuter[2];

@@ -106,12 +106,12 @@ namespace Messier.Testing.VoxTest
                 v.UpdateBuffers();
                 GraphicsDevice.SetBufferTexture(0, v.ColorData);
 
-                ShaderSource vShader = ShaderSource.Load(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader, "Shaders/TerrainLoD/vertex.glsl");
-                ShaderSource tCShader = ShaderSource.Load(OpenTK.Graphics.OpenGL4.ShaderType.TessControlShader, "Shaders/TerrainLoD/tesscontrol.glsl");
-                ShaderSource tEShader = ShaderSource.Load(OpenTK.Graphics.OpenGL4.ShaderType.TessEvaluationShader, "Shaders/TerrainLoD/tessdomain.glsl");
-                ShaderSource fShader = ShaderSource.Load(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader, "Shaders/TerrainLoD/fragment.glsl");
+                ShaderSource vShader = ShaderSource.Load(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader, "Testing/VoxTest/vertex.glsl");
+                //ShaderSource tCShader = ShaderSource.Load(OpenTK.Graphics.OpenGL4.ShaderType.TessControlShader, "Shaders/TerrainLoD/tesscontrol.glsl");
+                //ShaderSource tEShader = ShaderSource.Load(OpenTK.Graphics.OpenGL4.ShaderType.TessEvaluationShader, "Shaders/TerrainLoD/tessdomain.glsl");
+                ShaderSource fShader = ShaderSource.Load(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader, "Testing/VoxTest/fragment.glsl");
 
-                prog = new ShaderProgram(vShader, tCShader, tEShader, fShader);
+                prog = new ShaderProgram(vShader, fShader);
                 prog.Set("materialColors", 0);
 
 
@@ -171,13 +171,14 @@ namespace Messier.Testing.VoxTest
                 GraphicsDevice.SetVertexArray(vArray);
                 GraphicsDevice.SetIndexBuffer(indices);
                 GraphicsDevice.PatchCount = 3;
-                GraphicsDevice.Draw(PrimitiveType.Patches, 0, indices.dataLen);
+                GraphicsDevice.Draw(PrimitiveType.Triangles, 0, indices.dataLen);
                 GraphicsDevice.SwapBuffers();
             };
 
             GraphicsDevice.Name = "Voxel Test";
             GraphicsDevice.Run(60, 0);
             if (GraphicsDevice.Cleanup != null) GraphicsDevice.Cleanup();
+            GraphicsDevice.Exit();
         }
     }
 }

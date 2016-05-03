@@ -18,7 +18,7 @@ namespace Messier
         [STAThread]
         static void Main()
         {
-            Testing.SceneTest.SceneTest.Run();
+            Testing.SmoothVoxTest.SmoothVoxelTest.Run();
         }
     }
 }
